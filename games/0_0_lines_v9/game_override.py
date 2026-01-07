@@ -17,7 +17,7 @@ class GameStateOverride(GameExecutables):
     def assign_special_sym_function(self):
         self.special_symbol_functions = {
             "W": [self.assign_mult_property],
-            "K": [self.assign_key_drop_count],
+            "K": [self.assign_mult_property, self.assign_key_drop_count],  # K gets multiplier AND drops wilds
         }
     
     def assign_key_drop_count(self, symbol) -> dict:
@@ -74,11 +74,12 @@ class GameStateOverride(GameExecutables):
             
 
     def update_sticky_wilds(self) -> None:
-        """Update sticky wilds with any new wilds that appeared on the board."""
+        """Update sticky wilds with any new wilds that appeared on the board.
+        Both K and W symbols become sticky in free games."""
         if self.gametype == self.config.freegame_type:
             for reel_idx, reel in enumerate(self.board):
                 for row_idx, symbol in enumerate(reel):
-                    if symbol.name == "W":
+                    if symbol.name in ["K", "W"]:  # Both K and W become sticky
                         if reel_idx not in self.sticky_wilds:
                             self.sticky_wilds[reel_idx] = {}
                         self.sticky_wilds[reel_idx][row_idx] = symbol
@@ -273,7 +274,7 @@ class GameStateOverride(GameExecutables):
         new_wilds = []
         for reel_idx, reel in enumerate(self.board):
             for row_idx, symbol in enumerate(reel):
-                if symbol.name == "W":
+                if symbol.name in ["K", "W"]:  # Both K and W are wilds
                     # Check if this position wasn't already sticky
                     if not (reel_idx in self.sticky_wilds and row_idx in self.sticky_wilds[reel_idx]):
                         new_wilds.append({"reel": reel_idx, "row": row_idx})
@@ -296,28 +297,69 @@ class GameStateOverride(GameExecutables):
     
     def drop_wilds_from_k(self, num_drops: int) -> None:
         """Drop wilds randomly on the board from a K symbol.
+        Wilds drop to OTHER positions (not where K symbols are).
         If a wild lands on an existing wild, DOUBLE the multiplier."""
+        # Get all K symbol positions to avoid dropping on them
+        k_positions = set()
+        for reel_idx, reel in enumerate(self.board):
+            for row_idx, symbol in enumerate(reel):
+                if symbol.name == "K":
+                    k_positions.add((reel_idx, row_idx))
+        
         for _ in range(num_drops):
-            # Pick a random position on the board (5x5)
-            reel_idx = random.randint(0, len(self.board) - 1)
-            row_idx = random.randint(0, len(self.board[reel_idx]) - 1)
-            
-            current_symbol = self.board[reel_idx][row_idx]
-            
-            # Check if there's already a wild at this position
-            if current_symbol.name == "W":
-                # DOUBLE the multiplier
-                current_multiplier = current_symbol.get_attribute("multiplier")
-                if current_multiplier:
-                    new_multiplier = current_multiplier * 2
-                    current_symbol.assign_attribute({"multiplier": new_multiplier})
-            else:
-                # Place a new wild with a random multiplier (up to 128x)
-                new_wild = self.create_symbol("W")
-                # Assign a multiplier up to 128x
-                multiplier = self._get_k_wild_multiplier()
-                new_wild.assign_attribute({"multiplier": multiplier})
-                self.board[reel_idx][row_idx] = new_wild
+            # Pick a random position on the board (5x5), avoiding K positions
+            max_attempts = 50  # Prevent infinite loop
+            attempt = 0
+            while attempt < max_attempts:
+                reel_idx = random.randint(0, len(self.board) - 1)
+                row_idx = random.randint(0, len(self.board[reel_idx]) - 1)
+                
+                # Skip if this is where a K symbol is
+                if (reel_idx, row_idx) in k_positions:
+                    attempt += 1
+                    continue
+                
+                current_symbol = self.board[reel_idx][row_idx]
+                
+                # Check if there's already a wild at this position
+                if current_symbol.name == "W":
+                    # DOUBLE the multiplier
+                    current_multiplier = current_symbol.get_attribute("multiplier")
+                    if current_multiplier:
+                        new_multiplier = current_multiplier * 2
+                        current_symbol.assign_attribute({"multiplier": new_multiplier})
+                else:
+                    # Place a new wild with a random multiplier (up to 128x)
+                    new_wild = self.create_symbol("W")
+                    # Assign a multiplier up to 128x
+                    multiplier = self._get_k_wild_multiplier()
+                    new_wild.assign_attribute({"multiplier": multiplier})
+                    self.board[reel_idx][row_idx] = new_wild
+                
+                break  # Successfully placed, move to next drop
+                
+            if attempt >= max_attempts:
+                # If we couldn't find a valid position, just place it anywhere except K positions
+                available_positions = []
+                for r_idx, reel in enumerate(self.board):
+                    for row_idx, symbol in enumerate(reel):
+                        if (r_idx, row_idx) not in k_positions:
+                            available_positions.append((r_idx, row_idx))
+                
+                if available_positions:
+                    reel_idx, row_idx = random.choice(available_positions)
+                    current_symbol = self.board[reel_idx][row_idx]
+                    
+                    if current_symbol.name == "W":
+                        current_multiplier = current_symbol.get_attribute("multiplier")
+                        if current_multiplier:
+                            new_multiplier = current_multiplier * 2
+                            current_symbol.assign_attribute({"multiplier": new_multiplier})
+                    else:
+                        new_wild = self.create_symbol("W")
+                        multiplier = self._get_k_wild_multiplier()
+                        new_wild.assign_attribute({"multiplier": multiplier})
+                        self.board[reel_idx][row_idx] = new_wild
     
     def _get_k_wild_multiplier(self) -> int:
         """Get a random multiplier for wilds dropped by K symbols (up to 128x)."""

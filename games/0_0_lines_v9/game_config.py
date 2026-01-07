@@ -30,7 +30,8 @@ class GameConfig(Config):
         self.num_rows = [5] * self.num_reels
         # Board and Symbol Properties
         self.paytable = {
-            (5, "W"): 50,
+            (5, "K"): 50,  # K acts as wild and pays
+            (5, "W"): 50,  # Dropped wilds also pay
             (5, "H1"): 15,    # was 50
             (4, "H1"): 6,     # was 20
             (3, "H1"): 3,     # was 10
@@ -73,9 +74,9 @@ class GameConfig(Config):
         }
 
         self.include_padding = True
-        self.special_symbols = {"wild": ["W"],
+        self.special_symbols = {"wild": ["K", "W"],  # K acts as wild AND drops additional wilds
                                 "scatter": ["S"], 
-                                "multiplier": ["W"],
+                                "multiplier": ["K", "W"],  # Both K and W have multipliers
                                 "key": ["K"]}  # K symbol drops wilds
 
         # Fixed free spins structure
@@ -96,8 +97,12 @@ class GameConfig(Config):
 
         self.padding_reels[self.basegame_type] = self.reels["BR0"]
         self.padding_reels[self.freegame_type] = self.reels["FR0"]
-        self.padding_symbol_values = {"W": {"multiplier": {
-            2: 100, 3: 80, 5: 60, 10: 40, 20: 20, 50: 10, 100: 5, 250: 1, 500: 0.5, 1000: 0.2}}}
+        # K symbols act as wilds with multipliers (on reels)
+        # W symbols are only dropped by K (not on reels)
+        self.padding_symbol_values = {
+            "K": {"multiplier": {2: 100, 3: 80, 5: 60, 10: 40, 20: 20, 50: 10, 100: 5, 128: 2}},
+            "W": {"multiplier": {2: 100, 3: 80, 5: 60, 10: 40, 20: 20, 50: 10, 100: 5, 128: 2}}
+        }
 
         # Contains all game-logic simulation conditions
         self.bet_modes = [

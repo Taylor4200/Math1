@@ -5,14 +5,18 @@ This is a 5x5 lines game with K symbol mechanic that drops wilds with multiplier
 **BOARD:** 5x5 grid with 15 paylines
 
 **K SYMBOL MECHANIC:**
-- K symbols appear on reels and drop wilds randomly on the board
-- Each K symbol has an assigned number (1-5) determining how many wilds it drops
-- W symbols DO NOT appear organically on reels - they are ONLY created by K symbols
-- When a K symbol lands, it drops its assigned number of wilds to random positions
-- Wilds can have multipliers up to 128x initially
+- K symbols appear on reels naturally (replaced all W on reels with K)
+- **K acts as a WILD symbol itself** - it substitutes for other symbols and pays on lines (5K = 50x)
+- K also has a multiplier (2x-128x) like wilds
+- Each K symbol is assigned a number (1-5) determining how many ADDITIONAL wilds it drops
+- **W symbols DO NOT appear on reels** - they are ONLY created by K symbols dropping them
+- When a K lands, it acts as wild in its position AND launches additional W symbols to OTHER random positions
+- K symbols do NOT drop wilds on their own positions (they drop to OTHER positions)
+- Dropped wilds (W) can have multipliers up to 128x initially
 - **MULTIPLIER DOUBLING:** If a K drops a wild on a position where a wild already exists, it DOUBLES the multiplier
   - Example: 64x wild + new wild drop = 128x wild
   - This can cascade: 128x -> 256x -> 512x -> 1024x, etc.
+- K is like a "launcher/slingshot" - it stays wild, but shoots out more wilds elsewhere
 
 **FEATURE SPINS:**
 - **Feature Spin (20x cost):** Guarantees 2 K symbols on the board
