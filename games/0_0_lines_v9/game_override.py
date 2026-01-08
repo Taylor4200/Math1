@@ -22,9 +22,14 @@ class GameStateOverride(GameExecutables):
     
     def assign_key_drop_count(self, symbol) -> dict:
         """Assign how many wilds this K symbol will drop (1-5)."""
-        # Random number of wilds to drop: 1-5
-        drop_count = random.randint(1, 5)
-        symbol.assign_attribute({"wild_drops": drop_count})
+        # For Super Bonus, K doesn't drop wilds (too powerful when free games are guaranteed)
+        current_mode = self.get_current_betmode().get_name()
+        if current_mode in ["Super Bonus"]:
+            symbol.assign_attribute({"wild_drops": 0})  # No drops for Super Bonus
+        else:
+            # Random number of wilds to drop: 1-5
+            drop_count = random.randint(1, 5)
+            symbol.assign_attribute({"wild_drops": drop_count})
     
     def assign_mult_property(self, symbol) -> dict:
         """Assign multiplier value to Wild symbol in both basegame and freegame."""
@@ -76,6 +81,12 @@ class GameStateOverride(GameExecutables):
     def update_sticky_wilds(self) -> None:
         """Update sticky wilds with any new wilds that appeared on the board.
         Both K and W symbols become sticky in free games."""
+        # Disable sticky wilds for Super Bonus (free games are guaranteed)
+        # The sticky mechanics compound too much when free games are forced
+        current_mode = self.get_current_betmode().get_name()
+        if current_mode in ["Super Bonus"]:
+            return  # No sticky wilds for this mode
+            
         if self.gametype == self.config.freegame_type:
             for reel_idx, reel in enumerate(self.board):
                 for row_idx, symbol in enumerate(reel):
@@ -298,6 +309,8 @@ class GameStateOverride(GameExecutables):
     def drop_wilds_from_k(self, num_drops: int) -> None:
         """Drop wilds randomly on the board from a K symbol.
         Wilds drop to OTHER positions (not where K symbols are).
+        IMPORTANT: Wilds REPLACE existing symbols on the board (e.g., if L1 is at reel 2 row 3,
+        and a W drops there, the L1 is replaced by the W).
         If a wild lands on an existing wild, DOUBLE the multiplier."""
         # Get all K symbol positions to avoid dropping on them
         k_positions = set()
@@ -329,12 +342,13 @@ class GameStateOverride(GameExecutables):
                         new_multiplier = current_multiplier * 2
                         current_symbol.assign_attribute({"multiplier": new_multiplier})
                 else:
-                    # Place a new wild with a random multiplier (up to 128x)
+                    # Replace the existing symbol with a new wild (REPLACES L1, H1, etc.)
+                    # Example: If L1 is at reel 2 row 3, it gets replaced by W
                     new_wild = self.create_symbol("W")
                     # Assign a multiplier up to 128x
                     multiplier = self._get_k_wild_multiplier()
                     new_wild.assign_attribute({"multiplier": multiplier})
-                    self.board[reel_idx][row_idx] = new_wild
+                    self.board[reel_idx][row_idx] = new_wild  # REPLACES existing symbol
                 
                 break  # Successfully placed, move to next drop
                 
@@ -356,10 +370,11 @@ class GameStateOverride(GameExecutables):
                             new_multiplier = current_multiplier * 2
                             current_symbol.assign_attribute({"multiplier": new_multiplier})
                     else:
+                        # Replace existing symbol (L1, H1, etc.) with W
                         new_wild = self.create_symbol("W")
                         multiplier = self._get_k_wild_multiplier()
                         new_wild.assign_attribute({"multiplier": multiplier})
-                        self.board[reel_idx][row_idx] = new_wild
+                        self.board[reel_idx][row_idx] = new_wild  # REPLACES existing symbol
     
     def _get_k_wild_multiplier(self) -> int:
         """Get a random multiplier for wilds dropped by K symbols (up to 128x)."""

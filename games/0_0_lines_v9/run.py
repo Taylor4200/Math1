@@ -11,9 +11,9 @@ from src.write_data.write_configs import generate_configs
 
 if __name__ == "__main__":
 
-    num_threads = 16
-    rust_threads = 16
-    batching_size = 5000
+    num_threads = 10
+    rust_threads = 10
+    batching_size = 10000
     compression = True
     profiling = False
 
@@ -28,7 +28,7 @@ if __name__ == "__main__":
 
     run_conditions = {
         "run_sims": True,
-        "run_optimization": True,
+        "run_optimization": True,  # Already optimized - just regenerate books
         "run_analysis": True,
         "run_format_checks": True,
     }

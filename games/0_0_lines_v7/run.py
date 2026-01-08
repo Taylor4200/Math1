@@ -13,9 +13,9 @@ from src.write_data.write_configs import generate_configs
 
 if __name__ == "__main__":
 
-    num_threads = 16
-    rust_threads = 16
-    batching_size = 10000
+    num_threads = 8
+    rust_threads = 8
+    batching_size = 5000
     compression = True
     profiling = False
 

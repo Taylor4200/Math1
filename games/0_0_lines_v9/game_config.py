@@ -61,16 +61,14 @@ class GameConfig(Config):
             3: [2, 2, 2, 2, 2],  # Middle row
             4: [3, 3, 3, 3, 3],  # Fourth row
             5: [4, 4, 4, 4, 4],  # Bottom row
-            6: [1, 2, 3, 2, 1],  # V shape
-            7: [3, 2, 1, 2, 3],  # Inverse V
-            8: [0, 1, 2, 1, 0],  # Upper V
-            9: [2, 1, 0, 1, 2],  # Upper inverse V
-            10: [2, 3, 4, 3, 2], # Lower V
-            11: [4, 3, 2, 3, 4], # Lower inverse V
-            12: [0, 2, 4, 2, 0], # Wide V
-            13: [4, 2, 0, 2, 4], # Wide inverse V
-            14: [1, 0, 1, 0, 1], # Zigzag top
-            15: [3, 4, 3, 4, 3], # Zigzag bottom
+            6: [1, 2, 1, 2, 1],  # Alternating 1-2
+            7: [2, 1, 2, 1, 2],  # Alternating 2-1
+            8: [0, 1, 0, 1, 0],  # Alternating 0-1
+            9: [1, 0, 1, 0, 1],  # Alternating 1-0
+            10: [2, 3, 2, 3, 2],  # Alternating 2-3
+            11: [3, 2, 3, 2, 3],  # Alternating 3-2
+            12: [3, 4, 3, 4, 3],  # Alternating 3-4
+            13: [4, 3, 4, 3, 4],  # Alternating 4-3
         }
 
         self.include_padding = True
@@ -245,7 +243,7 @@ class GameConfig(Config):
             BetMode(
                 name="Super Bonus",
                 cost=500.0,
-                rtp=0.9580,  # Adjusted to be within 0.5% of main RTP (96.3%)
+                rtp=0.9600,
                 max_win=self.wincap,
                 auto_close_disabled=False,
                 is_feature=False,
@@ -291,11 +289,11 @@ class GameConfig(Config):
             BetMode(
                 name="Bonus Booster",
                 cost=2.0,  # 2x the user's bet
-                rtp=0.9600,  # Higher RTP than base game
+                rtp=0.9600,
                 max_win=self.wincap,
                 auto_close_disabled=False,
-                is_feature=False,  # Changed to match working modes
-                is_buybonus=True,  # Changed to match working modes
+                is_feature=True,
+                is_buybonus=False,
                 distributions=[
                     Distribution(
                         criteria="wincap",
@@ -307,8 +305,8 @@ class GameConfig(Config):
                                 self.freegame_type: {"FR0": 1, "WCAP": 5},
                             },
                             "mult_values": {
-                                self.basegame_type: {1: 1, 250: 0.1, 500: 0.05, 1000: 0.01},
-                                self.freegame_type: {2: 5, 3: 10, 5: 15, 10: 20, 20: 25, 50: 15, 100: 10, 250: 5, 500: 1, 1000: 0.2},
+                                self.basegame_type: {2: 10, 3: 20, 5: 15, 10: 10, 20: 5, 50: 3, 100: 2, 250: 0.2, 500: 0.05, 1000: 0.01},
+                                self.freegame_type: {2: 10, 3: 20, 5: 15, 10: 10, 20: 5, 50: 3, 100: 2, 250: 0.5, 500: 0.1, 1000: 0.02},
                             },
                             "scatter_triggers": {4: 1},
                             "force_wincap": True,
@@ -316,14 +314,14 @@ class GameConfig(Config):
                         },
                     ),
                     Distribution(
-                        criteria="freegame_boosted",
-                        quota=0.20,  # Regular bonus (3 scatters) - boosted scatter chance
+                        criteria="freegame",
+                        quota=0.20,  # Boosted free game chance (20% vs 15% in base)
                         conditions={
                             "reel_weights": {
                                 self.basegame_type: {"BR0": 1},
                                 self.freegame_type: {"FR0": 1},
                             },
-                            "scatter_triggers": {3: 100, 4: 0},  # ONLY 3 scatters -> 10 spins (regular bonus)
+                            "scatter_triggers": {3: 100, 4: 0},  # Regular bonus
                             "mult_values": {
                                 self.basegame_type: {1: 1, 250: 0.1, 500: 0.05, 1000: 0.01},
                                 self.freegame_type: {2: 140, 3: 160, 5: 140, 10: 120, 20: 100, 50: 50, 100: 40, 250: 20, 500: 5, 1000: 1},
@@ -333,14 +331,14 @@ class GameConfig(Config):
                         },
                     ),
                     Distribution(
-                        criteria="super_freegame_boosted",
-                        quota=0.04,  # Super bonus (4 scatters) - boosted scatter chance
+                        criteria="super_freegame",
+                        quota=0.05,  # Boosted super bonus (5% vs 4% in base)
                         conditions={
                             "reel_weights": {
                                 self.basegame_type: {"BR0": 1},
                                 self.freegame_type: {"FR0": 1},
                             },
-                            "scatter_triggers": {3: 0, 4: 100},  # ONLY 4 scatters -> 12 spins (super bonus)
+                            "scatter_triggers": {3: 0, 4: 100},  # Super bonus
                             "mult_values": {
                                 self.basegame_type: {1: 1, 250: 0.1, 500: 0.05, 1000: 0.01},
                                 self.freegame_type: {20: 140, 50: 120, 100: 100, 250: 60, 500: 15, 1000: 3},
@@ -351,12 +349,12 @@ class GameConfig(Config):
                     ),
                     Distribution(
                         criteria="0",
-                        quota=0.01,  # Minimal nil wins
+                        quota=0.01,
                         win_criteria=0.0,
                         conditions={
                             "reel_weights": {self.basegame_type: {"BR0": 1}},
                             "mult_values": {
-                                self.basegame_type: {1: 2, 2: 65, 3: 28, 5: 4, 10: 1, 20: 0.8, 50: 0.15, 100: 0.05, 250: 0.01, 500: 0.002, 1000: 0.0005},
+                                self.basegame_type: {1: 2, 2: 65, 3: 28, 5: 4, 10: 1, 20: 0.8, 50: 0.15, 100: 0.05, 250: 0.01, 500: 0.002},
                                 self.freegame_type: {1: 12, 2: 58, 3: 25, 5: 22, 10: 15, 20: 10, 50: 4, 100: 3, 250: 0.5, 500: 0.1, 1000: 0.02},
                             },
                             "force_wincap": False,
@@ -364,13 +362,13 @@ class GameConfig(Config):
                         },
                     ),
                     Distribution(
-                        criteria="basegame_boosted",
-                        quota=0.768,  # Adjusted to sum quotas to 1.0 (0.002 + 0.20 + 0.04 + 0.01 + 0.768 = 1.0)
+                        criteria="basegame",
+                        quota=0.738,  # Rest is basegame (0.002 + 0.20 + 0.05 + 0.01 + 0.738 = 1.0)
                         conditions={
                             "reel_weights": {self.basegame_type: {"BR0": 1}},
                             "mult_values": {
-                                self.basegame_type: {1: 2, 2: 10, 3: 15, 5: 30, 10: 25, 20: 15, 50: 3, 100: 1, 250: 0.1, 500: 0.02, 1000: 0.005},
-                                self.freegame_type: {1: 2, 2: 10, 3: 15, 5: 30, 10: 25, 20: 15, 50: 3, 100: 1, 250: 0.5, 500: 0.1, 1000: 0.02},
+                                self.basegame_type: {1: 2, 2: 65, 3: 28, 5: 4, 10: 1, 20: 0.8, 50: 0.15, 100: 0.05, 250: 0.01, 500: 0.002},
+                                self.freegame_type: {1: 12, 2: 58, 3: 25, 5: 22, 10: 15, 20: 10, 50: 4, 100: 3, 250: 0.5, 500: 0.1, 1000: 0.02},
                             },
                             "force_wincap": False,
                             "force_freegame": False,
