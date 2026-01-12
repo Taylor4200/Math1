@@ -85,9 +85,11 @@ def make_temp_math_config(gamestate):
     jsonInfo["bet_modes"] = []
     jsonInfo["fences"] = []
     jsonInfo["dresses"] = []
+    jsonInfo["bias"] = []
     rust_dict = {}
     rust_dict["game_id"] = jsonInfo["game_id"]
     rust_dict["bet_modes"] = []
+    rust_dict["bias"] = []
 
     # Separated betmode information
     opt_mode = None
@@ -151,6 +153,13 @@ def make_temp_math_config(gamestate):
 
             rust_dict["dresses"] += [rust_dress]
             jsonInfo["dresses"].append(rust_dress)
+
+            rust_bias = {"bet_mode": bet_mode.get_name(), "bias": []}
+            if "distribution_bias" in mode_obj.keys():
+                rust_bias["bias"].extend(mode_obj["distribution_bias"])
+            else:
+                rust_bias["bias"].extend([{"criteria": "", "range": [0.0, 0.0], "prob": 0.0}])
+            jsonInfo["bias"].append(rust_bias)
 
     file.write(json.dumps(jsonInfo, indent=4))
     file.close()
@@ -254,7 +263,7 @@ def make_fe_config(gamestate, json_padding=True, assign_properties=True, **kwarg
         json_info["paylines"] = gamestate.config.paylines
 
     symbols = {}
-    for sym in gamestate.symbol_storage.symbols.values():
+    for _, sym in gamestate.symbol_storage.symbol_defs.items():
         symbols[sym.name] = {}
         special_properties = []
         for prop in gamestate.config.special_symbols:
@@ -275,7 +284,7 @@ def make_fe_config(gamestate, json_padding=True, assign_properties=True, **kwarg
     if json_padding:
         for idx, reels in gamestate.config.padding_reels.items():
             reelstrip_json[idx] = [[] for _ in range(gamestate.config.num_reels)]
-            for c in range(gamestate.config.num_reels):
+            for c, _ in enumerate(reels):
                 column = reels[c]
                 for i, _ in enumerate(column):
                     reelstrip_json[idx][c].append({"name": column[i]})
@@ -329,7 +338,7 @@ def make_be_config(gamestate):
 
         lut_sha_value = get_hash(lut_table)
         dist = make_win_distribution(lut_table)
-        _, std_val, _, _ = get_distribution_moments(dist)
+        _, std_val, _, _ = get_distribution_moments(dist, bet.get_cost())
         std_val = round(std_val / bet.get_cost(), 2)
         booklength = get_lookup_length(lut_table)
 

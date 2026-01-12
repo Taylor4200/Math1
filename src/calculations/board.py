@@ -42,7 +42,7 @@ class Board(GeneralGameState):
                 sym_id = self.reelstrip[reel][(reel_pos + row) % len(self.reelstrip[reel])]
                 sym = self.create_symbol(sym_id)
                 board[reel][row] = sym
-                if sym.special:
+                if sym.defn.special:
                     for special_symbol in self.special_syms_on_board:
                         for s in self.config.special_symbols[special_symbol]:
                             if board[reel][row].name == s:
@@ -113,7 +113,7 @@ class Board(GeneralGameState):
                 sym = self.create_symbol(sym_id)
                 board[reel][row] = sym
 
-                if sym.special:
+                if sym.defn.special:
                     for special_symbol in self.special_syms_on_board:
                         for s in self.config.special_symbols[special_symbol]:
                             if board[reel][row].name == s:
@@ -141,16 +141,13 @@ class Board(GeneralGameState):
             self.top_symbols = top_symbols
             self.bottom_symbols = bottom_symbols
 
-    def create_symbol(self, name: str) -> object:
-        """Create a new symbol and assign relevant attributes."""
-        if name not in self.symbol_storage.symbols:
-            raise ValueError(f"Symbol '{name}' is not registered.")
-        symObject = self.symbol_storage.create_symbol_state(name)
+    def create_symbol(self, name: str):
+        sym = self.symbol_storage.create_symbol(name)
         if name in self.special_symbol_functions:
             for func in self.special_symbol_functions[name]:
-                func(symObject)
+                func(sym)
 
-        return symObject
+        return sym
 
     def refresh_special_syms(self) -> None:
         """Reset recorded speical symbols on board."""
@@ -163,7 +160,7 @@ class Board(GeneralGameState):
         self.refresh_special_syms()
         for reel, _ in enumerate(self.board):
             for row, _ in enumerate(self.board[reel]):
-                if self.board[reel][row].special:
+                if self.board[reel][row].defn.special:
                     for specialType in list(self.special_syms_on_board.keys()):
                         if self.board[reel][row].check_attribute(specialType):
                             self.special_syms_on_board[specialType].append({"reel": reel, "row": row})
@@ -255,13 +252,16 @@ class Board(GeneralGameState):
         for x in range(self.config.num_reels):
             sym_prob.append(len(reelstops[x]) / len(self.config.reels[reelstrip_id][x]))
         force_stop_positions = {}
-        while len(force_stop_positions) != num_force_syms:
-            possible_reels = [i for i in range(self.config.num_reels) if sym_prob[i] > 0]
-            possible_probs = [p for p in sym_prob if p > 0]
+        possible_reels = [i for i in range(self.config.num_reels) if sym_prob[i] > 0]
+        possible_probs = [p for p in sym_prob if p > 0]
+
+        while len(force_stop_positions) != num_force_syms and len(possible_reels) > 0:
             chosen_reel = random.choices(possible_reels, possible_probs)[0]
             chosen_stop = random.choice(reelstops[chosen_reel])
             sym_prob[chosen_reel] = 0
             force_stop_positions[int(chosen_reel)] = int(chosen_stop)
+            possible_reels = [i for i in range(self.config.num_reels) if sym_prob[i] > 0]
+            possible_probs = [p for p in sym_prob if p > 0]
 
         force_stop_positions = dict(sorted(force_stop_positions.items(), key=lambda x: x[0]))
         self.force_board_from_reelstrips(reelstrip_id, force_stop_positions)
@@ -294,3 +294,29 @@ class Board(GeneralGameState):
                 if self.board[idx][idy].name.upper() == symbol_name.upper():
                     symbol_count += 1
         return symbol_count
+
+    def get_symbol_positions(self, target_symbol: str) -> list:
+        """Get symbol positions currently on board"""
+        symbol_positions = {}
+        symbol_positions[target_symbol] = []
+        for idx, _ in enumerate(self.board):
+            for idy, _ in enumerate(self.board[idx]):
+                if self.board[idx][idy].name == target_symbol:
+                    symbol_positions[target_symbol].append({"reel": idx, "row": idy})
+
+        return symbol_positions
+
+    def add_symbols_to_board(self, symbol_name: str, additional_count: int):
+        """Add additional symbols to game board."""
+        free_positions = []
+        for idx, _ in enumerate(len(self.board)):
+            for idy, _ in enumerate(len(self.board[idx])):
+                if self.board[idx][idy].name != symbol_name:
+                    free_positions.append((idx, idy))
+
+        assert len(free_positions) >= additional_count, "not enough free place for additional symbols"
+
+        new_positions = random.choices(free_positions, additional_count)[0]
+        random.shuffle(new_positions)
+        for np in new_positions:
+            self.board[np[0]][np[1]] = self.create_symbol(symbol_name)
