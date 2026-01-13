@@ -1,6 +1,6 @@
-# Lines Games V9 - STICKY WILDS WITH GLOBAL MULTIPLIER
+# Lines Games V10 - STICKY WILDS WITH GLOBAL MULTIPLIER
 
-This is version 9 of the 0_0_lines game with STICKY WILDS and GLOBAL MULTIPLIER functionality.
+This is version 10 of the 0_0_lines game with STICKY WILDS and GLOBAL MULTIPLIER functionality.
 
 Wilds have multipliers and become sticky during free games. The sum of all sticky wild multipliers creates a global multiplier that applies to all wins.
 

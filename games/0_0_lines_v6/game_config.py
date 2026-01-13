@@ -20,7 +20,7 @@ class GameConfig(Config):
         self.game_id = "0_0_lines_v6"
         self.provider_number = 0
         self.working_name = "Gates of Olympus Style Game"
-        self.wincap = 10000.0
+        self.wincap = 10000.0  # Max win: 10,000x bet
         self.win_type = "scatter"
         self.rtp = 0.9630
         self.construct_paths()
@@ -120,7 +120,7 @@ class GameConfig(Config):
                 distributions=[
                     Distribution(
                         criteria="wincap",
-                        quota=0.002,
+                        quota=0.01,  # Increased from 0.002 for better max win hit rate (<1M)
                         win_criteria=self.wincap,
                         conditions={
                             "reel_weights": {
@@ -302,7 +302,7 @@ class GameConfig(Config):
                 distributions=[
                     Distribution(
                         criteria="wincap",
-                        quota=0.002,
+                        quota=0.01,  # Increased from 0.002 for better max win hit rate (<1M)
                         win_criteria=self.wincap,
                         conditions={
                             "reel_weights": {

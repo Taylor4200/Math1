@@ -66,6 +66,16 @@ def make_split_win_distribution(lut_file, split_file, all_modes, base_mode_name=
         all_weights.append(int(weight))
     total_lut_weight = int(sum(all_weights))
 
+    # Ensure arrays have matching lengths (LUT and split file should match)
+    if len(all_weights) != len(all_base):
+        raise ValueError(
+            f"Length mismatch: LUT file has {len(all_weights)} entries, "
+            f"but split file has {len(all_base)} entries. "
+            f"LUT: {lut_file}, Split: {split_file}. "
+            f"This usually means the optimized lookup table doesn't match the split file. "
+            f"Regenerate books or regenerate split file."
+        )
+
     for idx, _ in enumerate(all_weights):
         if base_mode_name in all_modes:
             combined_distributions[base_mode_name][all_base[idx]] += all_weights[idx]
@@ -134,7 +144,9 @@ def return_hit_rates(all_mode_distributions, total_weight, win_ranges, mode_cost
 
 def return_all_filepaths(game_id: str, mode: str):
     """Return file files required for PAR sheet generation."""
-    lut_path = os.path.join(PATH_TO_GAMES, game_id, "library", "publish_files", f"lookUpTable_{mode}_0.csv")
+    # Use regular lookup table from lookup_tables/ (matches books/split files)
+    # NOT the optimized one from publish_files/ (for gameplay/RGS)
+    lut_path = os.path.join(PATH_TO_GAMES, game_id, "library", "lookup_tables", f"lookUpTable_{mode}.csv")
     split_path = os.path.join(
         PATH_TO_GAMES, game_id, "library", "lookup_tables", f"lookUpTableSegmented_{mode}.csv"
     )

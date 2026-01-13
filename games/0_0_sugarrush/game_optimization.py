@@ -19,9 +19,12 @@ class OptimizationSetup:
                     "wincap": ConstructConditions(rtp=0.012, av_win=10000, search_conditions=10000).return_dict(),
                     "0": ConstructConditions(rtp=0, av_win=0, search_conditions=0).return_dict(),
                     "freegame": ConstructConditions(
-                        rtp=0.30, hr=145, search_conditions={"symbol": "scatter"}  # 3+ scatters: hr=145 = 1 in 145 spins
+                        rtp=0.50, hr=167, search_conditions={"symbol": "scatter"}  # ~50% RTP from freegame
+                        # Freegame triggers ~1 in 167 spins (quota 0.006), so needs high RTP per trigger
+                        # Adjusted hr from 145 to 167 to match new quota (1/0.006 ≈ 167)
                     ).return_dict(),
-                    "basegame": ConstructConditions(hr=4.5, rtp=0.651).return_dict(),
+                    "basegame": ConstructConditions(hr=3.5, rtp=0.50).return_dict(),  # ~50% RTP from basegame (targeting 40-50% of total RTP)
+                        # More frequent wins (hr=3.5 vs 4.5) with higher RTP per win (0.50 vs 0.651) = better basegame contribution
                 },
                 "scaling": ConstructScaling([
                     {
@@ -55,10 +58,10 @@ class OptimizationSetup:
                     score_type="rtp",
                 ).return_dict(),
             },
-            "Bonus": {
+            "bonus": {
                 "conditions": {
                     "wincap": ConstructConditions(rtp=0.012, av_win=10000, search_conditions=10000).return_dict(),
-                    "freegame": ConstructConditions(rtp=0.948, hr="x").return_dict(),  # Adjusted to achieve 96.0% total RTP
+                    "freegame": ConstructConditions(rtp=0.946, hr="x").return_dict(),  # Adjusted to 0.958 total (within 0.5% of base 0.963)
                 },
                 "scaling": ConstructScaling(
                     [
@@ -99,17 +102,17 @@ class OptimizationSetup:
                     num_per_fence=10000,
                     min_m2m=4,
                     max_m2m=8,
-                    pmb_rtp=0.96,  # Updated to match target RTP of 96.0%
+                    pmb_rtp=1.0,
                     sim_trials=5000,
                     test_spins=[10, 20, 50],
                     test_weights=[0.6, 0.2, 0.2],
                     score_type="rtp",
                 ).return_dict(),
             },
-            "Super Bonus": {
+            "super_bonus": {
                 "conditions": {
                     "wincap": ConstructConditions(rtp=0.012, av_win=10000, search_conditions=10000).return_dict(),
-                    "freegame": ConstructConditions(rtp=0.946, hr="x").return_dict(),  # Adjusted to achieve 95.8% total RTP
+                    "freegame": ConstructConditions(rtp=0.946, hr="x").return_dict(),  # Adjusted to 0.958 total (within 0.5% of base 0.963)
                 },
                 "scaling": ConstructScaling(
                     [
@@ -150,21 +153,23 @@ class OptimizationSetup:
                     num_per_fence=10000,
                     min_m2m=4,
                     max_m2m=8,
-                    pmb_rtp=0.958,  # Updated to match target RTP of 95.8%
+                    pmb_rtp=1.0,
                     sim_trials=5000,
                     test_spins=[10, 20, 50],
                     test_weights=[0.6, 0.2, 0.2],
                     score_type="rtp",
                 ).return_dict(),
             },
-            "Bonus Booster": {
+            "bonus_booster": {
                 "conditions": {
                     "wincap": ConstructConditions(rtp=0.012, av_win=10000, search_conditions=10000).return_dict(),
                     "0": ConstructConditions(rtp=0, av_win=0, search_conditions=0).return_dict(),
                     "freegame_boosted": ConstructConditions(
-                        rtp=0.30, hr=50, search_conditions={"symbol": "scatter"}  # 30% RTP from freegames (3x scatter = ~1 in 50 spins)
+                        rtp=0.45, hr=50, search_conditions={"symbol": "scatter"}  # ~45% RTP from freegames (2% trigger rate = 1 in 50 spins)
+                        # Bonus booster: Higher trigger rate (2% vs 0.6%) means more frequent free spins
                     ).return_dict(),
-                    "basegame_boosted": ConstructConditions(hr=4.5, rtp=0.648).return_dict(),  # 64.8% from basegame (total = 1.2 + 30 + 64.8 = 96.0)
+                    "basegame_boosted": ConstructConditions(hr=3.5, rtp=0.51).return_dict(),  # ~51% RTP from basegame (targeting better balance)
+                        # Adjusted for better basegame contribution (40-50% of total)
                 },
                 "scaling": ConstructScaling([
                     {
@@ -191,33 +196,16 @@ class OptimizationSetup:
                     num_per_fence=10000,
                     min_m2m=1,
                     max_m2m=20,
-                    pmb_rtp=0.96,  # Updated to match target RTP of 96.0%
+                    pmb_rtp=1.0,  # Allow higher RTP ceiling for buybonus
                     sim_trials=2000,
                     test_spins=[100, 200, 500],
                     test_weights=[0.2, 0.3, 0.5],
                     score_type="rtp",
                 ).return_dict(),
             },
-            "Feature Spin": {
+            "multiplierfeature": {
                 "conditions": {
-                    "multiplier_feature": ConstructConditions(rtp=0.96, hr="x").return_dict(),
-                },
-                "scaling": ConstructScaling([]).return_dict(),
-                "parameters": ConstructParameters(
-                    num_show=2000,
-                    num_per_fence=10000,
-                    min_m2m=1,
-                    max_m2m=20,
-                    pmb_rtp=0.96,
-                    sim_trials=2000,
-                    test_spins=[100, 200, 500],
-                    test_weights=[0.2, 0.3, 0.5],
-                    score_type="rtp",
-                ).return_dict(),
-            },
-            "Super Feature Spin": {
-                "conditions": {
-                    "500x_multiplier_feature": ConstructConditions(rtp=0.96, hr="x").return_dict(),
+                    "multiplier_feature": ConstructConditions(rtp=0.963, hr="x").return_dict(),  # Matches base RTP exactly
                 },
                 "scaling": ConstructScaling([]).return_dict(),
                 "parameters": ConstructParameters(

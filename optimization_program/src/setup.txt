@@ -1,9 +1,9 @@
-game_name;0_0_lines_v9
+game_name;0_0_lines_v10
 bet_type;Super Feature Spin
 num_show_pigs;2000
 num_pigs_per_fence;10000
-threads_for_fence_construction;10
-threads_for_show_construction;10
+threads_for_fence_construction;8
+threads_for_show_construction;8
 score_type;rtp
 test_spins;[100,200,500]
 test_spins_weights;[0.2,0.3,0.5]

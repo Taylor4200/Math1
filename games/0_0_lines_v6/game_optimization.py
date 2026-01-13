@@ -1,4 +1,4 @@
-"""Set conditions/parameters for optimization program program"""
+https://github.com/StakeEngine/math-sdk"""Set conditions/parameters for optimization program program"""
 
 from optimization_program.optimization_config import (
     ConstructScaling,
@@ -16,40 +16,48 @@ class OptimizationSetup:
         self.game_config.opt_params = {
             "base": {
                 "conditions": {
-                    "wincap": ConstructConditions(rtp=0.012, av_win=10000, search_conditions=10000).return_dict(),
-                    "0": ConstructConditions(rtp=0, av_win=0, search_conditions=0).return_dict(),
-                    "freegame": ConstructConditions(
-                        rtp=0.30, hr=145, search_conditions={"symbol": "scatter"}  # 3+ scatters: hr=145 = 1 in 145 spins
-                    ).return_dict(),
-                    "basegame": ConstructConditions(hr=4.5, rtp=0.651).return_dict(),
+                    "wincap": ConstructConditions(rtp=0.02, av_win=10000, search_conditions=10000).return_dict(),
+                    "basegame": ConstructConditions(rtp=0.943, hr="x").return_dict(),
                 },
                 "scaling": ConstructScaling([
                     {
                         "criteria": "basegame",
-                        "scale_factor": 4.8,        # heavily favor 1-2x wins
-                        "win_range": (1.0, 2.0),
-                        "probability": 1.0,
-                    },
-                    {
-                        "criteria": "basegame", 
-                        "scale_factor": 2.0,        # moderate favor 2-3x wins
-                        "win_range": (2.0, 3.0),
+                        "scale_factor": 0.001,  # EXTREME penalty for 0-0.5x wins
+                        "win_range": (0.0, 0.5),
                         "probability": 1.0,
                     },
                     {
                         "criteria": "basegame",
-                        "scale_factor": 0.45,       # heavily punish sub-1x junk
-                        "win_range": (0.0, 1.0),
+                        "scale_factor": 0.01,  # SEVERE penalty for 0.5-1x wins
+                        "win_range": (0.5, 1.0),
+                        "probability": 1.0,
+                    },
+                    {
+                        "criteria": "basegame",
+                        "scale_factor": 50.0,  # MASSIVE favor for 1-2x (bet back)
+                        "win_range": (1.0, 2.0),
+                        "probability": 1.0,
+                    },
+                    {
+                        "criteria": "basegame",
+                        "scale_factor": 30.0,  # Big favor for 2-5x
+                        "win_range": (2.0, 5.0),
+                        "probability": 1.0,
+                    },
+                    {
+                        "criteria": "basegame",
+                        "scale_factor": 10.0,  # Favor for 5-20x
+                        "win_range": (5.0, 20.0),
                         "probability": 1.0,
                     },
                 ]).return_dict(),
                 "parameters": ConstructParameters(
-                    num_show=500,        # Reduced from 2000 (4x faster)
-                    num_per_fence=2000,  # Reduced from 10000 (5x faster - major speedup!)
-                    min_m2m=1,
-                    max_m2m=20,
+                    num_show=5000,       # Maximum candidates for best variance (like 0_0_cluster)
+                    num_per_fence=10000,  # Maximum variety for maximum variance (like 0_0_cluster)
+                    min_m2m=4,           # Tighter range for consistent variance (like 0_0_cluster)
+                    max_m2m=8,            # Tighter range ensures better distribution spread
                     pmb_rtp=0.963,
-                    sim_trials=1000,     # Reduced from 2000 (2x faster)
+                    sim_trials=5000,     # Maximum accuracy for tightest optimization (like 0_0_cluster)
                     test_spins=[100, 200, 500],
                     test_weights=[0.2, 0.3, 0.5],
                     score_type="rtp",
@@ -95,12 +103,12 @@ class OptimizationSetup:
                     ]
                 ).return_dict(),
                 "parameters": ConstructParameters(
-                    num_show=500,        # Reduced from 5000 (10x faster)
-                    num_per_fence=2000,  # Reduced from 10000 (5x faster)
-                    min_m2m=4,
-                    max_m2m=8,
+                    num_show=5000,       # Maximum candidates for best variance (like 0_0_cluster)
+                    num_per_fence=10000,  # Maximum variety for maximum variance (like 0_0_cluster)
+                    min_m2m=4,           # Tighter range for consistent variance (like 0_0_cluster)
+                    max_m2m=8,            # Tighter range ensures better distribution spread
                     pmb_rtp=0.96,  # Updated to match target RTP of 96.0%
-                    sim_trials=1000,     # Reduced from 5000 (5x faster)
+                    sim_trials=5000,     # Maximum accuracy for tightest optimization (like 0_0_cluster)
                     test_spins=[10, 20, 50],
                     test_weights=[0.6, 0.2, 0.2],
                     score_type="rtp",
@@ -146,12 +154,12 @@ class OptimizationSetup:
                     ]
                 ).return_dict(),
                 "parameters": ConstructParameters(
-                    num_show=500,        # Reduced from 5000 (10x faster)
-                    num_per_fence=2000,  # Reduced from 10000 (5x faster)
-                    min_m2m=4,
-                    max_m2m=8,
+                    num_show=5000,       # Maximum candidates for best variance (like 0_0_cluster)
+                    num_per_fence=10000,  # Maximum variety for maximum variance (like 0_0_cluster)
+                    min_m2m=4,           # Tighter range for consistent variance (like 0_0_cluster)
+                    max_m2m=8,            # Tighter range ensures better distribution spread
                     pmb_rtp=0.958,  # Updated to match target RTP of 95.8%
-                    sim_trials=1000,     # Reduced from 5000 (5x faster)
+                    sim_trials=5000,     # Maximum accuracy for tightest optimization (like 0_0_cluster)
                     test_spins=[10, 20, 50],
                     test_weights=[0.6, 0.2, 0.2],
                     score_type="rtp",
@@ -159,40 +167,48 @@ class OptimizationSetup:
             },
             "bonus_booster": {
                 "conditions": {
-                    "wincap": ConstructConditions(rtp=0.012, av_win=10000, search_conditions=10000).return_dict(),
-                    "0": ConstructConditions(rtp=0, av_win=0, search_conditions=0).return_dict(),
-                    "freegame_boosted": ConstructConditions(
-                        rtp=0.30, hr=50, search_conditions={"symbol": "scatter"}  # 30% RTP from freegames (3x scatter = ~1 in 50 spins)
-                    ).return_dict(),
-                    "basegame_boosted": ConstructConditions(hr=4.5, rtp=0.648).return_dict(),  # 64.8% from basegame (total = 1.2 + 30 + 64.8 = 96.0)
+                    "wincap": ConstructConditions(rtp=0.02, av_win=10000, search_conditions=10000).return_dict(),
+                    "basegame_boosted": ConstructConditions(rtp=0.94, hr="x").return_dict(),
                 },
                 "scaling": ConstructScaling([
                     {
                         "criteria": "basegame_boosted",
-                        "scale_factor": 0.1,        # HEAVILY punish wins below 2.0 (below bet amount)
-                        "win_range": (0.0, 2.0),
-                        "probability": 1.0,
-                    },
-                    {
-                        "criteria": "basegame_boosted", 
-                        "scale_factor": 8.0,        # HEAVILY favor wins above 2.0 (above bet amount)
-                        "win_range": (2.0, 10.0),
+                        "scale_factor": 0.001,  # EXTREME penalty for 0-1x wins
+                        "win_range": (0.0, 1.0),
                         "probability": 1.0,
                     },
                     {
                         "criteria": "basegame_boosted",
-                        "scale_factor": 4.0,       # favor larger wins
-                        "win_range": (10.0, 100.0),
+                        "scale_factor": 0.01,  # SEVERE penalty for 1-2x wins (still below bet)
+                        "win_range": (1.0, 2.0),
+                        "probability": 1.0,
+                    },
+                    {
+                        "criteria": "basegame_boosted",
+                        "scale_factor": 50.0,  # MASSIVE favor for 2-4x (bet back)
+                        "win_range": (2.0, 4.0),
+                        "probability": 1.0,
+                    },
+                    {
+                        "criteria": "basegame_boosted",
+                        "scale_factor": 30.0,  # Big favor for 4-10x
+                        "win_range": (4.0, 10.0),
+                        "probability": 1.0,
+                    },
+                    {
+                        "criteria": "basegame_boosted",
+                        "scale_factor": 10.0,  # Favor for 10-40x
+                        "win_range": (10.0, 40.0),
                         "probability": 1.0,
                     },
                 ]).return_dict(),
                 "parameters": ConstructParameters(
-                    num_show=500,        # Reduced from 2000 (4x faster)
-                    num_per_fence=2000,  # Reduced from 10000 (5x faster)
-                    min_m2m=1,
-                    max_m2m=20,
-                    pmb_rtp=0.96,  # Updated to match target RTP of 96.0%
-                    sim_trials=1000,     # Reduced from 2000 (2x faster)
+                    num_show=5000,       # Maximum candidates for best variance (like 0_0_cluster)
+                    num_per_fence=10000,  # Maximum variety for maximum variance (like 0_0_cluster)
+                    min_m2m=4,           # Tighter range for consistent variance (like 0_0_cluster)
+                    max_m2m=8,            # Tighter range ensures better distribution spread
+                    pmb_rtp=0.96,
+                    sim_trials=5000,     # Maximum accuracy for tightest optimization (like 0_0_cluster)
                     test_spins=[100, 200, 500],
                     test_weights=[0.2, 0.3, 0.5],
                     score_type="rtp",
@@ -204,12 +220,12 @@ class OptimizationSetup:
                 },
                 "scaling": ConstructScaling([]).return_dict(),
                 "parameters": ConstructParameters(
-                    num_show=500,        # Reduced from 2000 (4x faster)
-                    num_per_fence=2000,  # Reduced from 10000 (5x faster)
-                    min_m2m=1,
-                    max_m2m=20,
+                    num_show=5000,       # Maximum candidates for best variance (like 0_0_cluster)
+                    num_per_fence=10000,  # Maximum variety for maximum variance (like 0_0_cluster)
+                    min_m2m=4,           # Tighter range for consistent variance (like 0_0_cluster)
+                    max_m2m=8,            # Tighter range ensures better distribution spread
                     pmb_rtp=0.96,
-                    sim_trials=1000,     # Reduced from 2000 (2x faster)
+                    sim_trials=5000,     # Maximum accuracy for tightest optimization (like 0_0_cluster)
                     test_spins=[100, 200, 500],
                     test_weights=[0.2, 0.3, 0.5],
                     score_type="rtp",
@@ -221,12 +237,12 @@ class OptimizationSetup:
                 },
                 "scaling": ConstructScaling([]).return_dict(),
                 "parameters": ConstructParameters(
-                    num_show=500,        # Reduced from 2000 (4x faster)
-                    num_per_fence=2000,  # Reduced from 10000 (5x faster)
-                    min_m2m=1,
-                    max_m2m=20,
+                    num_show=5000,       # Maximum candidates for best variance (like 0_0_cluster)
+                    num_per_fence=10000,  # Maximum variety for maximum variance (like 0_0_cluster)
+                    min_m2m=4,           # Tighter range for consistent variance (like 0_0_cluster)
+                    max_m2m=8,            # Tighter range ensures better distribution spread
                     pmb_rtp=0.96,
-                    sim_trials=1000,     # Reduced from 2000 (2x faster)
+                    sim_trials=5000,     # Maximum accuracy for tightest optimization (like 0_0_cluster)
                     test_spins=[100, 200, 500],
                     test_weights=[0.2, 0.3, 0.5],
                     score_type="rtp",

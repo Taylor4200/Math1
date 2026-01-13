@@ -20,10 +20,15 @@ class GameStateOverride(GameExecutables):
         }
     
     def assign_mult_property(self, symbol) -> dict:
-        """Assign multiplier value to Wild symbol in both basegame and freegame."""
-        multiplier_value = get_random_outcome(
-            self.get_current_distribution_conditions()["mult_values"][self.gametype]
-        )
+        """Assign multiplier value to Wild symbol in both basegame and freegame.
+        Ensures wilds always have multiplier > 1 (no 1x/0x multipliers)."""
+        mult_dist = self.get_current_distribution_conditions()["mult_values"][self.gametype]
+        # Filter out multiplier value 1 to ensure no 1x multipliers
+        filtered_dist = {k: v for k, v in mult_dist.items() if k > 1}
+        # If filtered distribution is empty, use original (shouldn't happen)
+        if not filtered_dist:
+            filtered_dist = mult_dist
+        multiplier_value = get_random_outcome(filtered_dist)
         symbol.assign_attribute({"multiplier": multiplier_value})
     
     
@@ -59,19 +64,39 @@ class GameStateOverride(GameExecutables):
             super().draw_board(emit_event, trigger_symbol)
 
     def update_sticky_wilds(self) -> None:
-        """Update sticky wilds with any new wilds that appeared on the board."""
+        """Update sticky wilds with any new wilds that appeared on the board and collect multipliers to global multiplier."""
         if self.gametype == self.config.freegame_type:
             for reel_idx, reel in enumerate(self.board):
                 for row_idx, symbol in enumerate(reel):
                     if symbol.name == "W":
+                        # Check if this position already has a sticky wild
+                        is_new_wild = (reel_idx not in self.sticky_wilds or 
+                                     row_idx not in self.sticky_wilds.get(reel_idx, {}))
+                        
+                        if is_new_wild:
+                            # This is a new wild - collect its multiplier to global multiplier
+                            if symbol.check_attribute("multiplier"):
+                                multiplier_value = symbol.get_attribute("multiplier")
+                                # Only add multipliers > 1 (1x = no multiplier, effectively 0x)
+                                if multiplier_value > 1:
+                                    # Add the multiplier value to the global multiplier
+                                    self.global_multiplier += multiplier_value
+                        
                         if reel_idx not in self.sticky_wilds:
                             self.sticky_wilds[reel_idx] = {}
                         # Store the wild symbol (with its multiplier) as sticky
                         self.sticky_wilds[reel_idx][row_idx] = symbol
 
+    def reset_fs_spin(self) -> None:
+        """Override to initialize global multiplier when free game starts."""
+        super().reset_fs_spin()
+        # Initialize global multiplier at the start of free game (starts at 1, accumulates sticky wild multipliers)
+        self.global_multiplier = 1
+
     def clear_sticky_wilds(self) -> None:
-        """Clear all sticky wilds (called when free game ends)."""
+        """Clear all sticky wilds and reset global multiplier (called when free game ends)."""
         self.sticky_wilds = {}
+        self.global_multiplier = 1
 
     def update_freespin_amount(self, scatter_key: str = "scatter") -> None:
         """Override to handle freespin triggers."""

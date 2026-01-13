@@ -338,7 +338,7 @@ def make_be_config(gamestate):
 
         lut_sha_value = get_hash(lut_table)
         dist = make_win_distribution(lut_table)
-        _, std_val, _, _ = get_distribution_moments(dist, bet.get_cost())
+        _, std_val, _, _ = get_distribution_moments(dist)
         std_val = round(std_val / bet.get_cost(), 2)
         booklength = get_lookup_length(lut_table)
 

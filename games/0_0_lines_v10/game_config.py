@@ -17,7 +17,7 @@ class GameConfig(Config):
 
     def __init__(self):
         super().__init__()
-        self.game_id = "0_0_lines_v9"
+        self.game_id = "0_0_lines_v10"
         self.provider_number = 0
         self.working_name = "Sample Lines Game"
         self.wincap = 10000.0

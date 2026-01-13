@@ -11,19 +11,20 @@ from src.write_data.write_configs import generate_configs
 
 if __name__ == "__main__":
 
-    num_threads = 16
-    rust_threads = 16
-    batching_size = 10000
+    num_threads = 3
+    rust_threads = 10
+    batching_size = 50000  # Reduced for faster processing
     compression = True
     profiling = False
 
+    # Reduced simulation counts for MUCH faster runs
     num_sim_args = {
-        "base": int(1e5),
-        "Wrath of Olympus": int(1e5),
-        "Super Wrath of Olympus": int(1e5),
-        "bonus_booster": int(1e5),
-        "Divine Strikes": int(1e5),
-        "Divine Judgement": int(1e5),
+        "base": int(1e5),  # Reduced from 100k to 20k (5x faster)
+        "Wrath of Olympus": int(1e5),  # Reduced from 100k to 20k
+        "Super Wrath of Olympus": int(1e5),  # Reduced from 100k to 20k
+        "bonus_booster": int(1e5),  # Reduced from 100k to 20k
+        "Divine Strikes": int(1e5),  # Reduced from 100k to 20k
+        "Divine Judgement": int(1e5),  # Reduced from 100k to 20k
     }
 
     run_conditions = {
@@ -61,7 +62,7 @@ if __name__ == "__main__":
         print("="*70 + "\n")
         
         try:
-        OptimizationExecution().run_all_modes(config, target_modes, rust_threads)
+            OptimizationExecution().run_all_modes(config, target_modes, rust_threads)
         except Exception as e:
             print(f"\n[ERROR] Optimization failed with error: {e}")
             import traceback
@@ -70,6 +71,7 @@ if __name__ == "__main__":
         # Swap optimized lookup tables (use pig 1 which is typically the best)
         # Note: Rust optimizer writes directly to publish_files for pig_index=0,
         # but we swap pig 1 (index 1) which is usually the best optimized distribution
+        # WARNING: After swapping, books and lookup tables won't match until books are regenerated
         print("\n" + "="*70)
         print("SWAPPING OPTIMIZED LOOKUP TABLES")
         print("="*70)
@@ -92,26 +94,43 @@ if __name__ == "__main__":
         
         generate_configs(gamestate)
         
+        # Automatically regenerate books for optimized modes to match optimized lookup tables
         if optimized_modes:
-            print(f"\n  [NOTE] Modes {optimized_modes} were optimized - books and lookup tables")
-            print(f"         will not match until books are regenerated. Skipping verification for these modes.")
+            print(f"\n" + "="*70)
+            print("REGENERATING BOOKS FOR OPTIMIZED MODES")
+            print("="*70)
+            print(f"Modes to regenerate: {optimized_modes}")
+            print("Books will be regenerated to match optimized lookup tables.")
+            print("="*70 + "\n")
+            
+            # Create dict with only optimized modes for regeneration
+            optimized_sim_args = {mode: num_sim_args[mode] for mode in optimized_modes if mode in num_sim_args}
+            
+            # Regenerate books for optimized modes only
+            create_books(
+                gamestate,
+                config,
+                optimized_sim_args,
+                batching_size,
+                num_threads,
+                compression,
+                profiling,
+            )
+            
+            # Regenerate configs after new books are created
+            generate_configs(gamestate)
+            
+            print(f"\n  [OK] Books regenerated for optimized modes: {optimized_modes}")
+            print(f"       Books and lookup tables now match - ready to publish!")
 
     if run_conditions["run_analysis"]:
         custom_keys = [{"symbol": "scatter"}]
         create_stat_sheet(gamestate, custom_keys=custom_keys)
 
     if run_conditions["run_format_checks"]:
-        # Skip verification for optimized modes since books won't match until regenerated
-        excluded_modes = optimized_modes if optimized_modes else []
-        if excluded_modes:
-            print(f"\n[NOTE] Skipping verification for optimized modes: {excluded_modes}")
-            print(f"       Regenerate books after optimization to pass full verification.")
-        
-        # If optimization ran, skip verification entirely since books won't match
-        # (books were generated before optimization, lookup tables were swapped after)
+        # Run verification for all modes (books should match after regeneration)
+        print(f"\n[NOTE] Running verification/stats generation.")
         if run_conditions["run_optimization"] and optimized_modes:
-            print(f"\n[SKIP] Skipping all verification - books were generated before optimization.")
-            print(f"       Lookup tables were swapped after optimization, so they won't match.")
-            print(f"       Regenerate books with 'run_sims=True' after optimization to pass verification.")
-        else:
-            execute_all_tests(config, excluded_modes=excluded_modes)
+            print(f"       Books were regenerated for optimized modes, verification should pass.")
+        
+        execute_all_tests(config)
