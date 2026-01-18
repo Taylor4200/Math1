@@ -15,31 +15,32 @@ class GameState(GameStateOverride):
             # Evaluate cluster pays
             self.get_clusters_update_wins()
             self.emit_tumble_win_events()
+            self.update_multiplier_spots(emit_event=True)  # Update and emit immediately so next tumble uses updated multipliers
 
-            # Tumble while there are wins - optimized with safety cap and minimum threshold
-            tumble_count = 0
-            max_tumbles = 100  # Safety cap to prevent infinite loops
-            min_win_threshold = 0.01  # Stop tumbling if win is below threshold (0.01x bet)
-            bet_amount = self.get_current_betmode().get_cost()
-            
+            # Tumble while there are wins
             while (self.win_data["totalWin"] > 0 and 
-                   not self.wincap_triggered and 
-                   tumble_count < max_tumbles and
-                   self.win_data["totalWin"] >= min_win_threshold * bet_amount):
+                   not self.wincap_triggered):
                 self.tumble_game_board()
                 self.get_clusters_update_wins()
                 self.emit_tumble_win_events()
-                tumble_count += 1
+                self.update_multiplier_spots(emit_event=True)  # Update and emit immediately so next tumble uses updated multipliers
 
             # After all tumbles, clear multiplier spots in base game
             self.set_end_tumble_event()
             self.win_manager.update_gametype_wins(self.gametype)
 
-            if self.check_fs_condition() and self.check_freespin_entry():
-                self.run_freespin_from_base()
+            # If wincap reached, finish this spin but don't trigger free spins
+            if self.wincap_triggered:
+                # Still evaluate final win and check repeat, but skip free spin trigger
+                self.evaluate_finalwin()
+                self.check_repeat()
+            else:
+                # Normal flow - check for free spin trigger
+                if self.check_fs_condition() and self.check_freespin_entry():
+                    self.run_freespin_from_base()
 
-            self.evaluate_finalwin()
-            self.check_repeat()
+                self.evaluate_finalwin()
+                self.check_repeat()
 
         self.imprint_wins()
 
@@ -53,27 +54,16 @@ class GameState(GameStateOverride):
             # Evaluate cluster pays
             self.get_clusters_update_wins()
             self.emit_tumble_win_events()
-            self.update_multiplier_spots(emit_event=False)  # Update spots but don't emit event yet
+            self.update_multiplier_spots(emit_event=True)  # Update and emit immediately so next tumble uses updated multipliers
             
-            # Tumble while there are wins - optimized with safety cap and minimum threshold
-            # Free spins allow more tumbles since multipliers can create longer chains
-            tumble_count = 0
-            max_tumbles = 75  # Higher cap for free spins (multiplier spots create longer chains)
-            min_win_threshold = 0.01  # Stop tumbling if win is below threshold (0.01x bet)
-            bet_amount = self.get_current_betmode().get_cost()
-            
+            # Tumble while there are wins
+            # Free spins allow multipliers to create longer chains
             while (self.win_data["totalWin"] > 0 and 
-                   not self.wincap_triggered and 
-                   tumble_count < max_tumbles and
-                   self.win_data["totalWin"] >= min_win_threshold * bet_amount):
+                   not self.wincap_triggered):
                 self.tumble_game_board()
                 self.get_clusters_update_wins()
                 self.emit_tumble_win_events()
-                self.update_multiplier_spots(emit_event=False)  # Update but skip event emission during tumble chain
-                tumble_count += 1
-            
-            # Emit multiplier event once after all tumbles complete
-            update_grid_mult_event(self)
+                self.update_multiplier_spots(emit_event=True)  # Update and emit immediately so next tumble uses updated multipliers
             
             self.set_end_tumble_event()
             self.win_manager.update_gametype_wins(self.gametype)

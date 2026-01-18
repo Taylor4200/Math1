@@ -1,5 +1,6 @@
 from game_executables import GameExecutables
 from src.calculations.statistics import get_random_outcome
+from src.events.events import json_ready_sym, EventConstants
 import random
 
 
@@ -12,7 +13,11 @@ class GameStateOverride(GameExecutables):
     def reset_book(self):
         super().reset_book()
         # Initialize sticky wilds tracking for free games
+        # Stores wilds using INTERNAL board indices (not including padding)
         self.sticky_wilds = {}  # {reel: {row: wild_symbol}}
+        # Also track padding symbols separately
+        self.sticky_top_padding = {}  # {reel: wild_symbol}
+        self.sticky_bottom_padding = {}  # {reel: wild_symbol}
 
     def assign_special_sym_function(self):
         self.special_symbol_functions = {
@@ -51,16 +56,28 @@ class GameStateOverride(GameExecutables):
                         # Place the sticky wild with its original multiplier (preserve the original symbol)
                         self.board[reel_idx][row_idx] = wild_symbol
             
+            # Apply sticky padding wilds
+            if self.config.include_padding:
+                for reel_idx, wild_symbol in self.sticky_top_padding.items():
+                    if reel_idx < len(self.top_symbols):
+                        self.top_symbols[reel_idx] = wild_symbol
+                for reel_idx, wild_symbol in self.sticky_bottom_padding.items():
+                    if reel_idx < len(self.bottom_symbols):
+                        self.bottom_symbols[reel_idx] = wild_symbol
+            
             if emit_event:
-                from src.events.events import reveal_event
-                reveal_event(self)
+                self.reveal_event()
         else:
             # Normal board drawing for base game or first free spin
-            super().draw_board(emit_event, trigger_symbol)
+            # ALWAYS use custom reveal_event to include multipliers
+            super().draw_board(emit_event=False, trigger_symbol=trigger_symbol)
+            if emit_event:
+                self.reveal_event()
 
     def update_sticky_wilds(self) -> None:
         """Update sticky wilds with any new wilds that appeared on the board."""
         if self.gametype == self.config.freegame_type:
+            # Update main board sticky wilds
             for reel_idx, reel in enumerate(self.board):
                 for row_idx, symbol in enumerate(reel):
                     if symbol.name == "W":
@@ -68,10 +85,76 @@ class GameStateOverride(GameExecutables):
                             self.sticky_wilds[reel_idx] = {}
                         # Store the wild symbol (with its multiplier) as sticky
                         self.sticky_wilds[reel_idx][row_idx] = symbol
+            
+            # Update padding sticky wilds
+            if self.config.include_padding:
+                for reel_idx, symbol in enumerate(self.top_symbols):
+                    if symbol.name == "W":
+                        self.sticky_top_padding[reel_idx] = symbol
+                for reel_idx, symbol in enumerate(self.bottom_symbols):
+                    if symbol.name == "W":
+                        self.sticky_bottom_padding[reel_idx] = symbol
 
     def clear_sticky_wilds(self) -> None:
         """Clear all sticky wilds (called when free game ends)."""
         self.sticky_wilds = {}
+        self.sticky_top_padding = {}
+        self.sticky_bottom_padding = {}
+    
+    def reveal_event(self):
+        """Override reveal_event to include multiplier information for wild symbols."""
+        board_client = []
+        special_attributes = list(self.config.special_symbols.keys())
+        
+        # Build board with special attributes
+        for reel, _ in enumerate(self.board):
+            board_client.append([])
+            for row in range(len(self.board[reel])):
+                symbol_json = json_ready_sym(self.board[reel][row], special_attributes)
+                # Add multiplier value for wild symbols (ALWAYS include it for frontend display)
+                if self.board[reel][row].name == "W":
+                    mult_val = self.board[reel][row].get_attribute("multiplier")
+                    if mult_val is not None:
+                        symbol_json["multiplier"] = int(mult_val)
+                    else:
+                        # This should never happen, but log it if it does
+                        print(f"WARNING: Wild symbol at reel {reel}, row {row} has no multiplier!")
+                        symbol_json["multiplier"] = 1  # Fallback to 1
+                board_client[reel].append(symbol_json)
+        
+        # Handle padding symbols
+        if self.config.include_padding:
+            for reel, _ in enumerate(board_client):
+                top_symbol_json = json_ready_sym(self.top_symbols[reel], special_attributes)
+                if self.top_symbols[reel].name == "W":
+                    mult_val = self.top_symbols[reel].get_attribute("multiplier")
+                    if mult_val is not None:
+                        top_symbol_json["multiplier"] = int(mult_val)
+                    else:
+                        print(f"WARNING: Top padding wild symbol at reel {reel} has no multiplier!")
+                        top_symbol_json["multiplier"] = 1
+                
+                bottom_symbol_json = json_ready_sym(self.bottom_symbols[reel], special_attributes)
+                if self.bottom_symbols[reel].name == "W":
+                    mult_val = self.bottom_symbols[reel].get_attribute("multiplier")
+                    if mult_val is not None:
+                        bottom_symbol_json["multiplier"] = int(mult_val)
+                    else:
+                        print(f"WARNING: Bottom padding wild symbol at reel {reel} has no multiplier!")
+                        bottom_symbol_json["multiplier"] = 1
+                
+                board_client[reel] = [top_symbol_json] + board_client[reel]
+                board_client[reel].append(bottom_symbol_json)
+        
+        event = {
+            "index": len(self.book.events),
+            "type": EventConstants.REVEAL.value,
+            "board": board_client,
+            "paddingPositions": self.reel_positions,
+            "gameType": self.gametype,
+            "anticipation": self.anticipation,
+        }
+        self.book.add_event(event)
 
     def update_freespin_amount(self, scatter_key: str = "scatter") -> None:
         """Override to handle freespin triggers."""
@@ -103,8 +186,10 @@ class GameStateOverride(GameExecutables):
             min_multipliers = conditions.get("force_min_multipliers", 1)
             self._force_500x_multiplier_board(min_multipliers)
         else:
-            # Normal board drawing
-            super().draw_board(emit_event, trigger_symbol)
+            # Normal board drawing - call super but use our custom reveal_event
+            super().draw_board(emit_event=False, trigger_symbol=trigger_symbol)
+            if emit_event:
+                self.reveal_event()
     
     def _force_multiplier_feature_board(self, min_wilds: int) -> None:
         """Force at least `min_wilds` wilds to appear on the board for multiplier feature.
@@ -148,13 +233,17 @@ class GameStateOverride(GameExecutables):
                 self.board[reel_idx][row_idx] = self.create_symbol("W")
         
         # Ensure all wilds have multipliers assigned
+        # Note: create_symbol("W") should automatically call assign_mult_property via special_symbol_functions
+        # This is a safety check in case any wilds were created without going through that flow
         for reel_idx, reel in enumerate(self.board):
             for row_idx, symbol in enumerate(reel):
-                if symbol.name == "W" and not symbol.check_attribute("multiplier"):
-                    self.assign_mult_property(symbol)
+                if symbol.name == "W":
+                    # Double-check that multiplier was assigned (should already be done by create_symbol)
+                    mult_val = symbol.get_attribute("multiplier")
+                    if mult_val is None:
+                        self.assign_mult_property(symbol)
         
-        from src.events.events import reveal_event
-        reveal_event(self)
+        self.reveal_event()
     
     def _force_500x_multiplier_board(self, min_multipliers: int = 1) -> None:
         """Force at least one wild with 500x multiplier for Super Feature Spin mode.
@@ -211,6 +300,5 @@ class GameStateOverride(GameExecutables):
                 if symbol.name == "W" and symbol.get_attribute("multiplier") is None:
                     self.assign_mult_property(symbol)
         
-        from src.events.events import reveal_event
-        reveal_event(self)
+        self.reveal_event()
     

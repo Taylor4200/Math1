@@ -26,15 +26,26 @@ class GameStateOverride(GameExecutables):
         # (they will persist throughout the round after this)
         self.reset_multiplier_spots()
         
-        # Check if super bonus (super_bonus bet mode) - start with 4x multipliers on ALL spots immediately
+        # Check if super bonus (super_bonus bet mode) - start with random multipliers (2x-1024x) on ALL spots
         # betmode is stored as string name, but may not exist during initialization (e.g., during __init__)
         # Only set super bonus multipliers when actually starting free spins (betmode exists and is super_bonus)
         if hasattr(self, 'betmode') and self.betmode == "super_bonus":
-            # Initialize all positions with 4x multiplier (explosion_count = 2 gives 2^2 = 4x)
+            # Valid multiplier values (powers of 2 from 2x to 1024x)
+            valid_multipliers = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024]
+            # Map multiplier to explosion_count: multiplier = 2^(count - 1) where count >= 2
+            # So: count = log2(multiplier) + 1, or use lookup: 2x→2, 4x→3, 8x→4, etc.
+            mult_to_count = {2: 2, 4: 3, 8: 4, 16: 5, 32: 6, 64: 7, 128: 8, 256: 9, 512: 10, 1024: 11}
+            
+            # Initialize all positions with random multipliers
             for reel_idx in range(self.config.num_reels):
                 for row_idx in range(self.config.num_rows[reel_idx]):
-                    self.explosion_count[reel_idx][row_idx] = 2  # explosion_count = 2 means 2^2 = 4x multiplier
-                    self.position_multipliers[reel_idx][row_idx] = 4
+                    # Pick random multiplier from valid list
+                    random_mult = random.choice(valid_multipliers)
+                    # Get corresponding explosion_count
+                    explosion_count = mult_to_count[random_mult]
+                    
+                    self.explosion_count[reel_idx][row_idx] = explosion_count
+                    self.position_multipliers[reel_idx][row_idx] = random_mult
 
     def assign_special_sym_function(self):
         # No special symbol functions needed - no multiplier symbols, only scatter

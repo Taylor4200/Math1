@@ -13,10 +13,10 @@ from src.write_data.write_configs import generate_configs
 
 if __name__ == "__main__":
 
-    # Optimized settings like 0_0_cluster for better performance
-    num_threads = 2  # Increased from 8 to 10 (like cluster game)
-    rust_threads = 20  # Increased from 8 to 20 for optimization (like cluster game)
-    batching_size = 10000  # Much larger batching (like cluster game) - reduces I/O overhead significantly
+    # Optimized settings for better performance
+    num_threads = 4  # Increased for parallel processing - bonus sims are slow
+    rust_threads = 20  # For optimization
+    batching_size = 5000  # Much larger batching reduces I/O overhead significantly
     compression = True
     profiling = False
 

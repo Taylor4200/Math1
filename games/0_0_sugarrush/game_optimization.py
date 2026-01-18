@@ -16,32 +16,32 @@ class OptimizationSetup:
         self.game_config.opt_params = {
             "base": {
                 "conditions": {
-                    "wincap": ConstructConditions(rtp=0.012, av_win=10000, search_conditions=10000).return_dict(),
+                    "wincap": ConstructConditions(rtp=0.012, av_win=25000, search_conditions=25000).return_dict(),
                     "0": ConstructConditions(rtp=0, av_win=0, search_conditions=0).return_dict(),
                     "freegame": ConstructConditions(
-                        rtp=0.50, hr=167, search_conditions={"symbol": "scatter"}  # ~50% RTP from freegame
+                        rtp=0.45, hr=167, search_conditions={"symbol": "scatter"}  # ~45% RTP from freegame (reduced from 0.50)
                         # Freegame triggers ~1 in 167 spins (quota 0.006), so needs high RTP per trigger
                         # Adjusted hr from 145 to 167 to match new quota (1/0.006 ≈ 167)
                     ).return_dict(),
-                    "basegame": ConstructConditions(hr=3.5, rtp=0.50).return_dict(),  # ~50% RTP from basegame (targeting 40-50% of total RTP)
-                        # More frequent wins (hr=3.5 vs 4.5) with higher RTP per win (0.50 vs 0.651) = better basegame contribution
+                    "basegame": ConstructConditions(hr=4.0, rtp=0.45).return_dict(),  # ~45% RTP from basegame (reduced from 0.50, hr increased from 3.5 to 4.0)
+                        # Less frequent wins (hr=4.0 vs 3.5) with lower RTP per win (0.45 vs 0.50) = reduced basegame contribution
                 },
                 "scaling": ConstructScaling([
                     {
                         "criteria": "basegame",
-                        "scale_factor": 4.8,        # heavily favor 1-2x wins
+                        "scale_factor": 3.5,        # favor 1-2x wins (reduced from 4.8)
                         "win_range": (1.0, 2.0),
                         "probability": 1.0,
                     },
                     {
                         "criteria": "basegame", 
-                        "scale_factor": 2.0,        # moderate favor 2-3x wins
+                        "scale_factor": 1.5,        # moderate favor 2-3x wins (reduced from 2.0)
                         "win_range": (2.0, 3.0),
                         "probability": 1.0,
                     },
                     {
                         "criteria": "basegame",
-                        "scale_factor": 0.45,       # heavily punish sub-1x junk
+                        "scale_factor": 0.5,       # punish sub-1x junk (increased from 0.45 to allow more nil wins)
                         "win_range": (0.0, 1.0),
                         "probability": 1.0,
                     },
@@ -60,7 +60,7 @@ class OptimizationSetup:
             },
             "bonus": {
                 "conditions": {
-                    "wincap": ConstructConditions(rtp=0.012, av_win=10000, search_conditions=10000).return_dict(),
+                    "wincap": ConstructConditions(rtp=0.012, av_win=25000, search_conditions=25000).return_dict(),
                     "freegame": ConstructConditions(rtp=0.946, hr="x").return_dict(),  # Adjusted to 0.958 total (within 0.5% of base 0.963)
                 },
                 "scaling": ConstructScaling(
@@ -111,7 +111,7 @@ class OptimizationSetup:
             },
             "super_bonus": {
                 "conditions": {
-                    "wincap": ConstructConditions(rtp=0.012, av_win=10000, search_conditions=10000).return_dict(),
+                    "wincap": ConstructConditions(rtp=0.012, av_win=25000, search_conditions=25000).return_dict(),
                     "freegame": ConstructConditions(rtp=0.946, hr="x").return_dict(),  # Adjusted to 0.958 total (within 0.5% of base 0.963)
                 },
                 "scaling": ConstructScaling(
@@ -162,7 +162,7 @@ class OptimizationSetup:
             },
             "bonus_booster": {
                 "conditions": {
-                    "wincap": ConstructConditions(rtp=0.012, av_win=10000, search_conditions=10000).return_dict(),
+                    "wincap": ConstructConditions(rtp=0.012, av_win=25000, search_conditions=25000).return_dict(),
                     "0": ConstructConditions(rtp=0, av_win=0, search_conditions=0).return_dict(),
                     "freegame_boosted": ConstructConditions(
                         rtp=0.45, hr=50, search_conditions={"symbol": "scatter"}  # ~45% RTP from freegames (2% trigger rate = 1 in 50 spins)

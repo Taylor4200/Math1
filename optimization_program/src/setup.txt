@@ -1,9 +1,9 @@
-game_name;0_0_lines_v10
+game_name;0_0_lines_v9
 bet_type;Super Feature Spin
 num_show_pigs;2000
 num_pigs_per_fence;10000
-threads_for_fence_construction;8
-threads_for_show_construction;8
+threads_for_fence_construction;16
+threads_for_show_construction;16
 score_type;rtp
 test_spins;[100,200,500]
 test_spins_weights;[0.2,0.3,0.5]
@@ -11,6 +11,6 @@ simulation_trials;2000
 graph_indexes;0
 run_1000_batch;False
 path_to_games;C:\Users\taylo\OneDrive\Desktop\math2\math-sdk\games
-pmb_rtp;0.96
+pmb_rtp;0.955
 min_mean_to_median;1
 max_mean_to_median;20

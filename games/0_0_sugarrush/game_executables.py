@@ -22,17 +22,19 @@ class GameExecutables(GameCalculations):
 
     def update_multiplier_spots(self, emit_event: bool = True):
         """
-        Sugar Rush multiplier spots system (optimized like 0_0_cluster):
-        - When clusters form, first hit creates a 2x multiplier on that square
+        Sugar Rush multiplier spots system:
+        - First hit: Marks/activates the spot (multiplier = 0x, just marked)
+        - Second hit: Creates 2x multiplier
         - Each subsequent hit doubles the multiplier (2x → 4x → 8x → 16x... up to 1024x)
         - Multiple multipliers in same cluster add together
         
         Optimized: Use lookup table for powers of 2 (much faster), only emit events when needed.
         """
         if self.win_data["totalWin"] > 0:
-            # Pre-computed powers of 2 lookup table (0-10 = 1 to 1024)
-            # Much faster than calculating 2**count every time
-            POWER_OF_2 = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024]
+            # Pre-computed powers of 2 lookup table
+            # Index 0 = 0x (marked but not active), Index 1 = 2x, Index 2 = 4x, etc.
+            # [0x, 2x, 4x, 8x, 16x, 32x, 64x, 128x, 256x, 512x, 1024x]
+            MULTIPLIER_LOOKUP = [0, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024]
             max_mult = self.config.maximum_board_mult
             
             for win in self.win_data["wins"]:
@@ -44,9 +46,17 @@ class GameExecutables(GameCalculations):
                     self.explosion_count[reel_idx][row_idx] += 1
                     count = self.explosion_count[reel_idx][row_idx]
                     
-                    # Optimized: Use lookup table for powers of 2 (O(1) vs O(log n) for bit shift)
-                    if count < len(POWER_OF_2):
-                        mult_value = POWER_OF_2[count]
+                    # count = 0: not hit (0x)
+                    # count = 1: first hit, marked but not active (0x)
+                    # count = 2: second hit, creates 2x multiplier
+                    # count = 3: third hit, 4x multiplier
+                    # count = 4: fourth hit, 8x multiplier, etc.
+                    if count == 0:
+                        mult_value = 0
+                    elif count == 1:
+                        mult_value = 0  # Marked but not active yet
+                    elif count - 1 < len(MULTIPLIER_LOOKUP):
+                        mult_value = MULTIPLIER_LOOKUP[count - 1]  # count=2 → index 1 = 2x, count=3 → index 2 = 4x
                     else:
                         mult_value = max_mult  # Already at max
                     

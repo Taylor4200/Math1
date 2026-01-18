@@ -37,6 +37,7 @@ class GameConfig(Config):
         # Format: ((min_count, max_count), symbol_name): payout (in bet multiplier)
         pay_group = {
             # High symbols: H1, H2, H3
+            # All values rounded to 0.1 increments to ensure payouts are multiples of 10 cents
             ((5, 6), "H1"): 0.5,
             ((7, 8), "H1"): 1.5,
             ((9, 10), "H1"): 5.0,
@@ -66,7 +67,7 @@ class GameConfig(Config):
             ((13, 14), "L1"): 20.0,
             ((15, 49), "L1"): 60.0,  # 15+ symbols pay 60x
             
-            ((5, 6), "L2"): 0.15,
+            ((5, 6), "L2"): 0.2,  # Changed from 0.15 to 0.2
             ((7, 8), "L2"): 0.5,
             ((9, 10), "L2"): 1.5,
             ((11, 12), "L2"): 5.0,
@@ -80,7 +81,7 @@ class GameConfig(Config):
             ((13, 14), "L3"): 12.0,
             ((15, 49), "L3"): 40.0,  # 15+ symbols pay 40x
             
-            ((5, 6), "L4"): 0.08,
+            ((5, 6), "L4"): 0.1,  # Changed from 0.08 to 0.1
             ((7, 8), "L4"): 0.3,
             ((9, 10), "L4"): 1.0,
             ((11, 12), "L4"): 3.5,
@@ -183,7 +184,7 @@ class GameConfig(Config):
                     ),
                     Distribution(
                         criteria="0",
-                        quota=0.01,
+                        quota=0.015,  # Increased from 0.01 to help reduce overall RTP
                         win_criteria=0.0,
                         conditions={
                             "reel_weights": {self.basegame_type: {"BR0": 1}},
@@ -193,7 +194,7 @@ class GameConfig(Config):
                     ),
                     Distribution(
                         criteria="basegame",
-                        quota=0.9815,  # Adjusted for realistic trigger rates (1 - 0.006 - 0.0005 - 0.01 - 0.002 = 0.9815)
+                        quota=0.9765,  # Reduced from 0.9815 to account for increased nil quota (1 - 0.006 - 0.0005 - 0.015 - 0.002 = 0.9765)
                         conditions={
                             "reel_weights": {self.basegame_type: {"BR0": 1}},
                             "force_wincap": False,

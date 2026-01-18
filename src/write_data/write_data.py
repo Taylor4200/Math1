@@ -81,7 +81,10 @@ def make_lookup_tables(gamestate: object, name: str):
     sims.sort()
     for sim in sims:
         # payoutMultiplier in library is already in cents (multiplied by 100 in books.py to_json())
-        file.write("{},1,{}\n".format(gamestate.library[sim]["id"], gamestate.library[sim]["payoutMultiplier"]))
+        # Round to nearest 10 to meet RGS requirements (payouts must be in increments of 10)
+        payout = gamestate.library[sim]["payoutMultiplier"]
+        rounded_payout = int(round(payout / 10) * 10) if payout > 0 else 0
+        file.write("{},1,{}\n".format(gamestate.library[sim]["id"], rounded_payout))
     file.close()
 
 

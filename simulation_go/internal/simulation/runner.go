@@ -114,3 +114,12 @@ func (r *Runner) runBatch(threadID, startSim, batchSize int, compress bool) erro
 
 
 
+
+
+
+
+
+
+
+
+
