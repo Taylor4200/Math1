@@ -26,7 +26,7 @@ class GameConfig(Config):
         self.construct_paths()
 
         # Game Dimensions
-        self.num_reels = 5
+        self.num_reels = 6
         self.num_rows = [5] * self.num_reels
         # Board and Symbol Properties
         self.paytable = {
@@ -61,8 +61,10 @@ class GameConfig(Config):
                 0,
                 0,
                 0,
+                0,
             ],
             2: [
+                1,
                 1,
                 1,
                 1,
@@ -75,8 +77,10 @@ class GameConfig(Config):
                 2,
                 2,
                 2,
+                2,
             ],
             4: [
+                3,
                 3,
                 3,
                 3,
@@ -89,6 +93,7 @@ class GameConfig(Config):
                 1,
                 2,
                 1,
+                2,
             ],
             6: [
                 2,
@@ -96,6 +101,7 @@ class GameConfig(Config):
                 2,
                 1,
                 2,
+                1,
             ],
             7: [
                 0,
@@ -103,6 +109,7 @@ class GameConfig(Config):
                 0,
                 1,
                 0,
+                1,
             ],
             8: [
                 1,
@@ -110,6 +117,7 @@ class GameConfig(Config):
                 1,
                 0,
                 1,
+                0,
             ],
             9: [
                 2,
@@ -117,6 +125,7 @@ class GameConfig(Config):
                 2,
                 3,
                 2,
+                3,
             ],
             10: [
                 3,
@@ -124,8 +133,10 @@ class GameConfig(Config):
                 3,
                 2,
                 3,
+                2,
             ],
             11: [
+                4,
                 4,
                 4,
                 4,
@@ -138,6 +149,7 @@ class GameConfig(Config):
                 3,
                 4,
                 3,
+                4,
             ],
             13: [
                 4,
@@ -145,6 +157,7 @@ class GameConfig(Config):
                 4,
                 3,
                 4,
+                3,
             ],
         }
 

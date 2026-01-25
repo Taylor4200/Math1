@@ -283,7 +283,8 @@ def make_fe_config(gamestate, json_padding=True, assign_properties=True, **kwarg
     reelstrip_json = {}
     if json_padding:
         for idx, reels in gamestate.config.padding_reels.items():
-            reelstrip_json[idx] = [[] for _ in range(gamestate.config.num_reels)]
+            # Initialize with actual number of columns in reels, not num_reels
+            reelstrip_json[idx] = [[] for _ in range(len(reels))]
             for c, _ in enumerate(reels):
                 column = reels[c]
                 for i, _ in enumerate(column):

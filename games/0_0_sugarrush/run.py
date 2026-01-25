@@ -16,7 +16,7 @@ if __name__ == "__main__":
     # Optimized settings for better performance
     num_threads = 4  # Increased for parallel processing - bonus sims are slow
     rust_threads = 20  # For optimization
-    batching_size = 5000  # Much larger batching reduces I/O overhead significantly
+    batching_size = 15000  # Much larger batching reduces I/O overhead significantly
     compression = True
     profiling = False
 
@@ -31,8 +31,8 @@ if __name__ == "__main__":
 
     run_conditions = {
         "run_sims": True,
-        "run_optimization": True,
-        "run_analysis": True,
+        "run_optimization": False,
+        "run_analysis": False,
         "run_format_checks": True,
     }
     target_modes = ["base", "bonus", "super_bonus", "bonus_booster"]

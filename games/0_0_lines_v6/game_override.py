@@ -23,17 +23,7 @@ class GameStateOverride(GameExecutables):
     
     def assign_multiplier_symbol_property(self, symbol) -> dict:
         """Assign multiplier value to multiplier symbol M.
-        Uses weighted distribution based on game type (basegame or freegame).
-        In Divine Judgement mode, has a chance to assign MAX multiplier."""
-        # Check if Divine Judgement mode is enabled
-        conditions = self.get_current_distribution_conditions()
-        if conditions.get("enable_max_multiplier"):
-            # In Divine Judgement mode, check if this should be a MAX multiplier
-            max_chance = conditions.get("max_multiplier_chance", 0.05)  # Default 5% chance
-            if random.random() < max_chance:
-                symbol.assign_attribute({"multiplier": "MAX"})
-                return  # MAX assigned, no need to assign normal multiplier
-        
+        Uses weighted distribution based on game type (basegame or freegame)."""
         # Normal multiplier assignment
         if hasattr(self.config, 'multiplier_symbol_distributions'):
             mult_dist = self.config.multiplier_symbol_distributions[self.gametype]

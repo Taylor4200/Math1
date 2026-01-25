@@ -160,6 +160,9 @@ class GameStateOverride(GameExecutables):
         """Override to handle freespin triggers."""
         scatter_count = self.count_special_symbols(scatter_key)
         
+        # Cap scatter count at 4 (max is 4 scatters, even if 5 or 6 appear)
+        scatter_count = min(scatter_count, 4)
+        
         # Use normal freespin triggers
         self.tot_fs = self.config.freespin_triggers[self.gametype][scatter_count]
         

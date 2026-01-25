@@ -72,8 +72,12 @@ Multiplier spots are **grid positions** that grow in value when clusters form on
 - During free spins: Multipliers continue to grow and persist
 
 #### Super Bonus Special Case
-- At the start of Super Bonus free spins, **ALL positions** start with **4x multiplier** immediately
-- Then they continue to grow normally from there
+- At the start of Super Bonus free spins, **ALL positions** start with **random multipliers (2x-1024x)** immediately
+- **Linear distribution**: 50% start at 2x, decreasing linearly to 1% at 1024x (rarest). Distribution: 50% (2x), ~10.9% (4x), ~9.5% (8x), ~8.2% (16x), ~6.8% (32x), ~5.4% (64x), ~4.1% (128x), ~2.7% (256x), ~1.4% (512x), 1% (1024x).
+- Very few positions (0.4% or less) start at 128x or higher
+- These multipliers are set **BEFORE** the first board reveal
+- Frontend receives `updateGrid` event with initial multipliers **BEFORE** the first `reveal` event
+- Then multipliers continue to grow normally from there (can double with each hit, up to 1024x max)
 
 ### Multiplier Calculation Formula
 ```
@@ -244,7 +248,7 @@ final_win = 1.5 × 14 = 21.0x bet
 |------|------|-----|-------------|
 | **base** | 1x bet | 96.30% | Standard base game |
 | **bonus** | 100x bet | 95.80% | Buy bonus feature |
-| **super_bonus** | 500x bet | 95.80% | Buy super bonus (starts with 4x on all positions) |
+| **super_bonus** | 500x bet | 95.80% | Buy super bonus (starts with random 2x-1024x multipliers on all positions) |
 | **bonus_booster** | 2x bet | 96.30% | Increased scatter chance (2% vs 0.6%) |
 
 ---
@@ -341,6 +345,9 @@ final_win = 1.5 × 14 = 21.0x bet
 final_win = paytable_payout × sum(position_multipliers_in_cluster) × global_multiplier
 multiplier = 2^(explosion_count - 1)  (capped at 1024x)
 ```
+
+
+
 
 
 

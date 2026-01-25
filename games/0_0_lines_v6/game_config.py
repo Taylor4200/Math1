@@ -392,33 +392,4 @@ class GameConfig(Config):
                     ),
                 ],
             ),
-            BetMode(
-                name="Divine Judgement",
-                cost=1000.0,
-                rtp=0.9600,
-                max_win=self.wincap,
-                auto_close_disabled=False,
-                is_feature=True,  # Feature spin - persists after each round
-                is_buybonus=True,
-                distributions=[
-                    Distribution(
-                        criteria="divine_judgement",
-                        quota=1.0,  # 100% - always use divine judgement mode
-                        conditions={
-                            "reel_weights": {
-                                self.basegame_type: {"BR0": 1},
-                                self.freegame_type: {"FR0": 1},
-                            },
-                            "mult_values": {
-                                self.basegame_type: {1: 2, 2: 65, 3: 28, 5: 4, 10: 1, 20: 0.8, 50: 0.15, 100: 0.05, 250: 0.01},
-                                self.freegame_type: {1: 12, 2: 58, 3: 25, 5: 22, 10: 15, 20: 10, 50: 4, 100: 3, 250: 0.5},
-                            },
-                            "enable_max_multiplier": True,  # Enable MAX multiplier symbol
-                            "max_multiplier_chance": 0.05,  # 5% chance for M symbol to be MAX in Divine Judgement
-                            "force_wincap": False,
-                            "force_freegame": False,
-                        },
-                    ),
-                ],
-            ),
         ]

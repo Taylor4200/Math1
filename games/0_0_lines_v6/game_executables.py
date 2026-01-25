@@ -31,18 +31,6 @@ class GameExecutables(GameCalculations):
     
     def set_end_tumble_event(self):
         """After all tumbling events have finished, apply multiplier symbols (Gates of Olympus style)."""
-        # Check for MAX multiplier in Divine Judgement mode - if present with tumble, gives max win
-        if self.win_manager.tumble_win > 0:
-            has_max = self.check_max_multiplier_on_board()
-            if has_max:
-                # MAX multiplier + tumble = max win (no matter what tumble amount)
-                self.win_manager.set_spin_win(self.config.wincap)
-                from src.events.events import set_win_event, set_total_event
-                if self.win_manager.spin_win > 0:
-                    set_win_event(self)
-                set_total_event(self)
-                return
-        
         # Base game: multiply win by sum of multipliers on board
         board_mult_sum = self.get_board_multipliers_sum()
         
@@ -56,33 +44,18 @@ class GameExecutables(GameCalculations):
             set_win_event(self)
         set_total_event(self)
     
-    def check_max_multiplier_on_board(self):
-        """Check if any multiplier symbol has MAX attribute/value."""
-        multiplier_symbols = self.config.special_symbols.get("multiplier", [])
-        
-        for reel_idx, reel in enumerate(self.board):
-            for row_idx, symbol in enumerate(reel):
-                if symbol.name in multiplier_symbols:
-                    if symbol.check_attribute("multiplier"):
-                        mult_value = symbol.get_attribute("multiplier")
-                        # Check if multiplier value is "MAX"
-                        if mult_value == "MAX":
-                            return True
-        return False
-    
     def get_board_multipliers_sum(self):
         """Get sum of all multiplier symbol values on the board (M symbols only)."""
         total_mult = 0
         multiplier_symbols = self.config.special_symbols.get("multiplier", [])
         
-        # Count all multiplier symbols (M) - skip MAX as it's handled separately
+        # Count all multiplier symbols (M)
         for reel_idx, reel in enumerate(self.board):
             for row_idx, symbol in enumerate(reel):
                 if symbol.name in multiplier_symbols:
                     if symbol.check_attribute("multiplier"):
                         mult_value = symbol.get_attribute("multiplier")
-                        # Skip MAX multiplier - it's handled separately in set_end_tumble_event
-                        if mult_value != "MAX" and isinstance(mult_value, (int, float)):
+                        if isinstance(mult_value, (int, float)):
                             total_mult += mult_value
         
         return total_mult  # Return sum of multiplier values (can be 0 if none present)

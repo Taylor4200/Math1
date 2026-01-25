@@ -31,16 +31,19 @@ class GameStateOverride(GameExecutables):
         # Only set super bonus multipliers when actually starting free spins (betmode exists and is super_bonus)
         if hasattr(self, 'betmode') and self.betmode == "super_bonus":
             # Valid multiplier values (powers of 2 from 2x to 1024x)
+            # Linear distribution: 50% at 2x, decreasing linearly to 1% at 1024x (rarest)
             valid_multipliers = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024]
+            # Weights: 50% = 2x, then linearly decreasing to 1% = 1024x
+            weights = [5000, 1088, 952, 816, 680, 544, 408, 272, 140, 100]  # Out of 10000 total (exactly 10000)
             # Map multiplier to explosion_count: multiplier = 2^(count - 1) where count >= 2
             # So: count = log2(multiplier) + 1, or use lookup: 2x→2, 4x→3, 8x→4, etc.
             mult_to_count = {2: 2, 4: 3, 8: 4, 16: 5, 32: 6, 64: 7, 128: 8, 256: 9, 512: 10, 1024: 11}
             
-            # Initialize all positions with random multipliers
+            # Initialize all positions with weighted random multipliers
             for reel_idx in range(self.config.num_reels):
                 for row_idx in range(self.config.num_rows[reel_idx]):
-                    # Pick random multiplier from valid list
-                    random_mult = random.choice(valid_multipliers)
+                    # Pick random multiplier using weighted distribution
+                    random_mult = random.choices(valid_multipliers, weights=weights, k=1)[0]
                     # Get corresponding explosion_count
                     explosion_count = mult_to_count[random_mult]
                     
@@ -50,6 +53,14 @@ class GameStateOverride(GameExecutables):
     def assign_special_sym_function(self):
         # No special symbol functions needed - no multiplier symbols, only scatter
         self.special_symbol_functions = {}
+
+    def create_symbol(self, name: str):
+        # During free spins: suppress 60% of scatters (replace with L1) so retriggers stay RARE.
+        # Scatters remain possible on ANY reel; they just land less often during the feature.
+        if (name == "S" and getattr(self, "gametype", None) == self.config.freegame_type
+                and random.random() < 0.6):
+            return super().create_symbol("L1")
+        return super().create_symbol(name)
 
     def check_repeat(self):
         super().check_repeat()

@@ -24,13 +24,12 @@ if __name__ == "__main__":
         "Super Wrath of Olympus": int(1e5),  # Reduced from 100k to 20k
         "bonus_booster": int(1e5),  # Reduced from 100k to 20k
         "Divine Strikes": int(1e5),  # Reduced from 100k to 20k
-        "Divine Judgement": int(1e5),  # Reduced from 100k to 20k
     }
 
     run_conditions = {
         "run_sims": True,        # Set to False to skip book creation (books already exist)
-        "run_optimization": True,  # Only run optimization
-        "run_analysis": True,     # Skip analysis for now
+        "run_optimization": False,  # Only run optimization
+        "run_analysis": False,     # Skip analysis for now
         "run_format_checks": True, # Skip format checks for now
     }
     target_modes = list(num_sim_args.keys())

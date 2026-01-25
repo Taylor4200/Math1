@@ -22,7 +22,6 @@ if __name__ == "__main__":
         "Super Wrath of Olympus": int(1e5),
         "bonus_booster": int(1e5),
         "Divine Strikes": int(1e5),
-        "Divine Judgement": int(1e5),
     }
     
     target_modes = list(num_sim_args.keys())
@@ -81,6 +80,11 @@ if __name__ == "__main__":
     print(f"  Books: {config.output_files.books['paths']['books']}")
     print(f"  Lookup Tables: {config.output_files.lookup['paths']['lookup_tables']}")
     print("="*70 + "\n")
+
+
+
+
+
 
 
 

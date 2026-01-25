@@ -17,7 +17,6 @@ if __name__ == "__main__":
         "Super Wrath of Olympus",
         "bonus_booster",
         "Divine Strikes",
-        "Divine Judgement",
     ]
     
     print("\n" + "="*70)
@@ -48,6 +47,11 @@ if __name__ == "__main__":
         print(f"\n[ERROR] Optimization failed with error: {e}")
         import traceback
         traceback.print_exc()
+
+
+
+
+
 
 
 

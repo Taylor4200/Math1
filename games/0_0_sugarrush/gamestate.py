@@ -46,6 +46,12 @@ class GameState(GameStateOverride):
 
     def run_freespin(self):
         self.reset_fs_spin()
+        
+        # SUPER BONUS: Emit initial multipliers BEFORE first spin starts
+        # This allows frontend to show starting animation with multipliers already on board
+        if hasattr(self, 'betmode') and self.betmode == "super_bonus":
+            update_grid_mult_event(self)  # Emit initial random multipliers (2x-1024x on all spots)
+        
         while self.fs < self.tot_fs:
             self.update_freespin()
             self.draw_board()

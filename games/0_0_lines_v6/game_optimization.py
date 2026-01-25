@@ -1,4 +1,4 @@
-https://github.com/StakeEngine/math-sdk"""Set conditions/parameters for optimization program program"""
+"""Set conditions/parameters for optimization program program"""
 
 from optimization_program.optimization_config import (
     ConstructScaling,
@@ -217,23 +217,6 @@ class OptimizationSetup:
             "Divine Strikes": {
                 "conditions": {
                     "multiplier_feature": ConstructConditions(rtp=0.96, hr="x").return_dict(),
-                },
-                "scaling": ConstructScaling([]).return_dict(),
-                "parameters": ConstructParameters(
-                    num_show=5000,       # Maximum candidates for best variance (like 0_0_cluster)
-                    num_per_fence=10000,  # Maximum variety for maximum variance (like 0_0_cluster)
-                    min_m2m=4,           # Tighter range for consistent variance (like 0_0_cluster)
-                    max_m2m=8,            # Tighter range ensures better distribution spread
-                    pmb_rtp=0.96,
-                    sim_trials=5000,     # Maximum accuracy for tightest optimization (like 0_0_cluster)
-                    test_spins=[100, 200, 500],
-                    test_weights=[0.2, 0.3, 0.5],
-                    score_type="rtp",
-                ).return_dict(),
-            },
-            "Divine Judgement": {
-                "conditions": {
-                    "divine_judgement": ConstructConditions(rtp=0.96, hr="x").return_dict(),
                 },
                 "scaling": ConstructScaling([]).return_dict(),
                 "parameters": ConstructParameters(

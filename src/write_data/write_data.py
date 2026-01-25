@@ -267,7 +267,10 @@ def output_lookup_and_force_files(
 
 def write_json(gamestate, filename: str):
     """Convert the list of dictionaries to a JSON-encoded string and compress it in chunks."""
-    json_objects = [json.dumps(item) for item in gamestate.library.values()]
+    # Sort by simulation ID to match lookup table order
+    sims = list(gamestate.library.keys())
+    sims.sort()
+    json_objects = [json.dumps(gamestate.library[sim]) for sim in sims]
     combined_data = "\n".join(json_objects) + "\n"
 
     if filename.endswith(".zst"):
@@ -280,7 +283,7 @@ def write_json(gamestate, filename: str):
             if not (gamestate.config.output_regular_json):
                 f.write(combined_data)
             else:
-                j_regular = [item for item in gamestate.library.values()]
+                j_regular = [gamestate.library[sim] for sim in sims]
                 f.write(json.dumps(j_regular))
 
 

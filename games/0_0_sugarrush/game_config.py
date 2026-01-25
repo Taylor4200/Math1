@@ -289,8 +289,8 @@ class GameConfig(Config):
                 rtp=0.9630,  # Matches base RTP exactly
                 max_win=self.wincap,
                 auto_close_disabled=False,
-                is_feature=False,  # Changed to match working modes
-                is_buybonus=True,  # Changed to match working modes
+                is_feature=True,  # Can trigger free spins naturally (boosted chance)
+                is_buybonus=True,  # Still a buy bonus mode
                 distributions=[
                     Distribution(
                         criteria="wincap",

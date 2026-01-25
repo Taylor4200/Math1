@@ -24,8 +24,12 @@ Authentic Sugar Rush slot game implementation with cluster pays and multiplier s
 - Triggered by 3, 4, 5, 6, or 7 scatters (10, 12, 15, 20, or 30 free spins respectively)
 - Multiplier spots persist throughout the entire free spins round
 - Multiplier spots can continue to grow with each tumble
-- Retrigger: 3, 4, 5, 6, or 7 scatters award additional free spins (same amounts)
+- Retrigger: 3, 4, 5, 6, or 7 scatters award additional free spins (same amounts). Retriggers are RARE: during free spins, 60% of scatter outcomes are suppressed (replaced with L1), so scatters land less often. Scatters can appear on any reel.
 - Special reels are in play during the feature
+
+**Reel strip rules:**
+- Max 1 scatter (S) per reel: each reel has at most one S, so multiple scatters cannot land on the same reel. Scatters can appear on any reel (all 7) in both base and free spins.
+- Reels are balanced for diversity: L1 reduced in favour of H1/H2/H3 so wins spread across more symbol types and cluster sizes (no change to paytable or min 5-cluster rule).
 
 **Buy Free Spins:**
 - **Regular Free Spins (100x bet)**: Buy to trigger free spins feature - can get 3-7 scatters (10, 12, 15, 20, or 30 free spins)
