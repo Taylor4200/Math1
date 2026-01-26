@@ -106,7 +106,7 @@ def fix_reels_for_low_rtp():
             # Total low: 63% (~18.9 per board) - REDUCED from 67%
         },
         scatter_weight=0.012,  # Slightly reduced scatters
-        multiplier_weight=0.020,  # Keep multipliers high for Super Wrath (2.0%)
+        multiplier_weight=0.015,  # Reduced multipliers for free games (1.5%)
     )
     free_gen.generate_reel_file("reels/FR0.csv", reel_type="freegame")
     
