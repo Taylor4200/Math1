@@ -318,3 +318,20 @@ class GameStateOverride(GameExecutables):
                     if not (reel_idx in self.sticky_wilds and row_idx in self.sticky_wilds[reel_idx]):
                         new_wilds.append({"reel": reel_idx, "row": row_idx})
         return new_wilds
+    
+    def should_tumble(self) -> bool:
+        """
+        Override to make tumbles rarer during simulations, but allow more in free games.
+        Only allows tumbles a percentage of the time even when there's a win.
+        This reduces excessive cascades without changing core game logic.
+        """
+        # Base game: Only tumble 15% of the time when there's a win
+        # Free game: Tumble 30% of the time - need more tumbles for bought bonuses to work
+        tumble_chance = 0.15 if self.gametype == self.config.basegame_type else 0.30
+        
+        # Check if there's actually a win
+        if self.win_data.get("totalWin", 0) <= 0:
+            return False
+        
+        # Random chance to allow tumble
+        return random.random() < tumble_chance

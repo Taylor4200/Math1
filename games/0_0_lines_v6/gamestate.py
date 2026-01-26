@@ -15,8 +15,10 @@ class GameState(GameStateOverride):
             self.get_scatterpays_update_wins()
             self.emit_tumble_win_events()  # Transmit win information
 
-            # Tumble while there are wins
+            # Tumble while there are wins (but only if should_tumble allows it)
             while self.win_data["totalWin"] > 0 and not (self.wincap_triggered):
+                if not self.should_tumble():
+                    break  # Stop tumbling even if there's a win
                 self.tumble_game_board()
                 self.get_scatterpays_update_wins()
                 self.emit_tumble_win_events()
@@ -46,8 +48,10 @@ class GameState(GameStateOverride):
             self.get_scatterpays_update_wins()
             self.emit_tumble_win_events()  # Transmit win information
 
-            # Tumble while there are wins
+            # Tumble while there are wins (but only if should_tumble allows it)
             while self.win_data["totalWin"] > 0 and not (self.wincap_triggered):
+                if not self.should_tumble():
+                    break  # Stop tumbling even if there's a win
                 self.tumble_game_board()
                 self.get_scatterpays_update_wins()
                 self.emit_tumble_win_events()

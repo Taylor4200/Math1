@@ -228,41 +228,41 @@ def generate_gates_of_olympus_reels(include_wincap: bool = False):
             hand-crafted wincap reel (recommended so forced max-win criteria still pass).
     """
     
-    # Base game reels (BR0.csv) - low symbols dominate, scatters slightly more common than multipliers
+    # Base game reels (BR0.csv) - HEAVILY weighted toward lowest symbols to reduce tumbles/RTP
     print("Generating base game reels (BR0.csv)...")
     base_generator = ReelGenerator(
         num_reels=6,  # 6 reels
         num_rows=250,  # 250 positions per reel
         symbol_weights={
-            "H1": 0.05,
-            "H2": 0.06,
-            "H3": 0.07,
-            "L1": 0.28,
-            "L2": 0.24,
-            "L3": 0.18,
-            "L4": 0.12,
+            "H1": 0.02,   # Reduced from 0.05 - rarest premium
+            "H2": 0.03,   # Reduced from 0.06
+            "H3": 0.04,   # Reduced from 0.07
+            "L1": 0.15,   # Reduced from 0.28
+            "L2": 0.20,   # Reduced from 0.24
+            "L3": 0.30,   # Increased from 0.18 - most common
+            "L4": 0.26,   # Increased from 0.12 - second most common
         },
-        scatter_weight=0.03,   # Slightly more scatters than multipliers in base game
-        multiplier_weight=0.015,
+        scatter_weight=0.02,   # Reduced from 0.03 - fewer bonuses
+        multiplier_weight=0.008,  # Reduced from 0.015 - much fewer multipliers
     )
     base_generator.generate_reel_file("reels/BR0.csv", reel_type="basegame")
     
-    # Free game reels (FR0.csv) - still low-heavy but with richer scatter/multiplier mix
+    # Free game reels (FR0.csv) - HEAVILY weighted toward lowest symbols, minimal multipliers
     print("\nGenerating free game reels (FR0.csv)...")
     free_generator = ReelGenerator(
         num_reels=6,  # 6 reels
         num_rows=250,  # 250 positions per reel
         symbol_weights={
-            "H1": 0.07,
-            "H2": 0.08,
-            "H3": 0.09,
-            "L1": 0.28,
-            "L2": 0.22,
-            "L3": 0.16,
-            "L4": 0.10,
+            "H1": 0.04,   # Reduced from 0.07
+            "H2": 0.05,   # Reduced from 0.08
+            "H3": 0.06,   # Reduced from 0.09
+            "L1": 0.18,   # Reduced from 0.28
+            "L2": 0.22,   # Same
+            "L3": 0.28,   # Increased from 0.16 - most common
+            "L4": 0.17,   # Increased from 0.10
         },
-        scatter_weight=0.025,  # Higher scatter for retriggers
-        multiplier_weight=0.05,  # More multipliers in free games
+        scatter_weight=0.015,  # Reduced from 0.025 - fewer retriggers
+        multiplier_weight=0.015,  # Reduced from 0.05 (was 5%!) - this was causing massive RTP
     )
     free_generator.generate_reel_file("reels/FR0.csv", reel_type="freegame")
     
