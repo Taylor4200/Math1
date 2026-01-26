@@ -80,11 +80,10 @@ def make_lookup_tables(gamestate: object, name: str):
     sims = list(gamestate.library.keys())
     sims.sort()
     for sim in sims:
-        # payoutMultiplier in library is already in cents (multiplied by 100 in books.py to_json())
-        # Round to nearest 10 to meet RGS requirements (payouts must be in increments of 10)
+        # payoutMultiplier in library is already in cents and rounded to increments of 10
+        # (done in books.py to_json()). Use it directly without additional rounding.
         payout = gamestate.library[sim]["payoutMultiplier"]
-        rounded_payout = int(round(payout / 10) * 10) if payout > 0 else 0
-        file.write("{},1,{}\n".format(gamestate.library[sim]["id"], rounded_payout))
+        file.write("{},1,{}\n".format(gamestate.library[sim]["id"], payout))
     file.close()
 
 
@@ -249,12 +248,12 @@ def output_lookup_and_force_files(
             with open(filename, "r", encoding="UTF-8") as infile:
                 outfile.write(infile.read())
 
-    # Write _0 file if it does not exist
-    if not (os.path.exists(gamestate.output_files.get_optimized_lookup_name(betmode))):
-        shutil.copy(
-            gamestate.output_files.get_final_lookup_name(betmode),
-            gamestate.output_files.get_optimized_lookup_name(betmode),
-        )
+    # Always copy final lookup table to _0 file (overwrite if exists)
+    # This ensures the _0 file matches the newly generated books
+    shutil.copy(
+        gamestate.output_files.get_final_lookup_name(betmode),
+        gamestate.output_files.get_optimized_lookup_name(betmode),
+    )
     with open(
         gamestate.output_files.get_final_segmented_name(betmode),
         "w",

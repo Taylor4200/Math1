@@ -126,7 +126,11 @@ def run_multi_process_sims(
     """Setup multiprocessing manager for running all game-mode simulations."""
     print("\nCreating books for", game_id, "in", betmode)
     num_repeats = max(int(round(num_sims / threads / batching_size, 0)), 1)
-    sims_per_thread = int(num_sims / threads / num_repeats)
+    sims_per_thread_base = int(num_sims / threads / num_repeats)
+    remainder = (num_sims - (sims_per_thread_base * threads * num_repeats))
+    # Distribute remainder to ensure exactly num_sims total simulations
+    if remainder > 0:
+        print(f"Distributing {remainder} remainder sims across threads in last repeat")
     num_sims_criteria = get_sim_splits(gamestate, num_sims, betmode)
     sim_allocation = assign_sim_criteria(num_sims_criteria, num_sims)
     for repeat in range(num_repeats):
@@ -134,7 +138,11 @@ def run_multi_process_sims(
         processes = []
         manager = Manager()
         all_betmode_configs = manager.list()
+        # Calculate sims_per_thread for each thread, accounting for remainder in last repeat
+        is_last_repeat = (repeat == num_repeats - 1)
         if profiling:
+            # For profiling, use base sims_per_thread
+            sims_per_thread = sims_per_thread_base
             asyncio.run(
                 profile_and_visualize(
                     game_id=game_id,
@@ -151,6 +159,9 @@ def run_multi_process_sims(
                 )
             )
         elif threads == 1:
+            # Single thread gets all remainder if in last repeat
+            sims_per_thread = sims_per_thread_base + (remainder if is_last_repeat else 0)
+            start_sim = repeat * (sims_per_thread_base * threads)
             gamestate.run_sims(
                 betmode_copy_list=all_betmode_configs,
                 betmode=betmode,
@@ -160,11 +171,29 @@ def run_multi_process_sims(
                 num_sims=sims_per_thread,
                 thread_index=0,
                 repeat_count=repeat,
+                start_sim=start_sim,
                 compress=compress,
                 write_event_list=write_event_list,
             )
         else:
+            # Calculate cumulative sim counts for each thread to determine start positions
+            sims_per_thread_list = []
+            cumulative_sims = 0
+            for t in range(threads):
+                extra_sim = 1 if (is_last_repeat and t < remainder) else 0
+                thread_sims = sims_per_thread_base + extra_sim
+                sims_per_thread_list.append(thread_sims)
+            
+            # Calculate start sim for this repeat
+            sims_per_repeat_base = sims_per_thread_base * threads
+            repeat_start_sim = repeat * sims_per_repeat_base
+            
             for thread in range(threads):
+                # Calculate start sim for this thread (cumulative from previous threads in this repeat)
+                thread_start_in_repeat = sum(sims_per_thread_list[:thread])
+                start_sim = repeat_start_sim + thread_start_in_repeat
+                sims_per_thread = sims_per_thread_list[thread]
+                
                 process = Process(
                     target=gamestate.run_sims,
                     args=(
@@ -176,11 +205,12 @@ def run_multi_process_sims(
                         sims_per_thread,
                         thread,
                         repeat,
+                        start_sim,  # Pass calculated start sim
                         compress,
                         write_event_list,
                     ),
                 )
-                print("Started thread", thread)
+                print("Started thread", thread, f"({sims_per_thread} sims, starting at sim {start_sim})")
                 process.start()
                 processes += [process]
             print("All threads are online.")

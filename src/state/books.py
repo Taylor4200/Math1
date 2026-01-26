@@ -26,9 +26,13 @@ class Book:
 
     def to_json(self):
         "Return JSON-ready object."
+        # Convert to cents and round to increments of 10 to match RGS requirements
+        # This matches the rounding logic in write_data.py make_lookup_tables()
+        payout_cents = int(round(self.payout_multiplier * 100, 0))
+        rounded_payout = int(round(payout_cents / 10) * 10) if payout_cents > 0 else 0
         json_book = {
             "id": self.id,
-            "payoutMultiplier": int(round(self.payout_multiplier * 100, 0)),
+            "payoutMultiplier": rounded_payout,
             "events": self.events,
             "criteria": self.criteria,
             "baseGameWins": self.basegame_wins,

@@ -239,6 +239,7 @@ class GeneralGameState(ABC):
         num_sims,
         thread_index,
         repeat_count,
+        start_sim=None,
         compress=True,
         write_event_list=True,
     ) -> None:
@@ -247,10 +248,14 @@ class GeneralGameState(ABC):
         self.library = {}
         self.betmode = betmode
         self.num_sims = num_sims
-        for sim in range(
-            thread_index * num_sims + (total_threads * num_sims) * repeat_count,
-            (thread_index + 1) * num_sims + (total_threads * num_sims) * repeat_count,
-        ):
+        # Use start_sim if provided (for variable sims_per_thread), otherwise calculate from thread_index
+        if start_sim is not None:
+            sim_start = start_sim
+            sim_end = start_sim + num_sims
+        else:
+            sim_start = thread_index * num_sims + (total_threads * num_sims) * repeat_count
+            sim_end = (thread_index + 1) * num_sims + (total_threads * num_sims) * repeat_count
+        for sim in range(sim_start, sim_end):
             self.criteria = sim_to_criteria[sim]
             self.run_spin(sim)
         mode_cost = self.get_current_betmode().get_cost()
