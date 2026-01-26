@@ -86,25 +86,26 @@ def fix_reels_for_low_rtp():
     )
     base_gen.generate_reel_file("reels/BR0.csv", reel_type="basegame")
     
-    # Free game - INCREASED RTP: More symbols, more multipliers, more variety
+    # Free game - REDUCED symbol density to naturally reduce tumbles
+    # Since tumbles are 100% natural now, we need fewer wins = fewer tumbles
     # Higher paying symbols = rarer (inverse relationship)
-    # More high symbols for better payouts, more low symbols for more wins
+    # Keep multipliers for bought bonuses but reduce symbol density
     print("\nFree Game Reels:")
     free_gen = ReelGenerator(
         num_reels=6, num_rows=250,
         symbol_weights={
-            "H1": 0.12,  # Highest pay = rarest (~3.6 per board)
-            "H2": 0.15,  # Medium-high pay = medium rare (~4.5 per board)
-            "H3": 0.18,  # Lowest high pay = most common high (~5.4 per board)
-            # Total high: 45% (~13.5 per board) - INCREASED for better payouts
-            "L1": 0.14,  # Highest low pay = rarest low (~4.2 per board)
-            "L2": 0.16,  # Medium-low pay (~4.8 per board)
-            "L3": 0.18,  # Medium pay (~5.4 per board)
-            "L4": 0.19,  # Lowest pay = most common low (~5.7 per board)
-            # Total low: 67% (~20.1 per board) - INCREASED for more wins
+            "H1": 0.10,  # Highest pay = rarest (~3 per board) - REDUCED
+            "H2": 0.12,  # Medium-high pay = medium rare (~3.6 per board) - REDUCED
+            "H3": 0.14,  # Lowest high pay = most common high (~4.2 per board) - REDUCED
+            # Total high: 36% (~10.8 per board) - REDUCED from 45%
+            "L1": 0.13,  # Highest low pay = rarest low (~3.9 per board) - REDUCED
+            "L2": 0.15,  # Medium-low pay (~4.5 per board) - REDUCED
+            "L3": 0.17,  # Medium pay (~5.1 per board) - REDUCED
+            "L4": 0.18,  # Lowest pay = most common low (~5.4 per board) - REDUCED
+            # Total low: 63% (~18.9 per board) - REDUCED from 67%
         },
-        scatter_weight=0.015,  # More scatters for retrigger variety
-        multiplier_weight=0.012,  # More multipliers (1.2% = ~18 per reel strip) for bought bonuses
+        scatter_weight=0.012,  # Slightly reduced scatters
+        multiplier_weight=0.020,  # Keep multipliers high for Super Wrath (2.0%)
     )
     free_gen.generate_reel_file("reels/FR0.csv", reel_type="freegame")
     

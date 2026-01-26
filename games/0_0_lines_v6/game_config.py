@@ -265,7 +265,7 @@ class GameConfig(Config):
                             },
                             "mult_values": {
                                 self.basegame_type: {1: 1, 250: 0.1},
-                                self.freegame_type: {20: 25, 50: 30, 100: 25, 250: 10},
+                                self.freegame_type: {20: 60, 50: 80, 100: 70, 250: 40},  # INCREASED weights for Super Wrath
                             },
                             "scatter_triggers": {3: 1},
                             "force_wincap": True,
@@ -283,7 +283,7 @@ class GameConfig(Config):
                             "scatter_triggers": {3: 100},  # GUARANTEED 3 scatters = 10 spins
                             "mult_values": {
                                 self.basegame_type: {1: 1, 250: 0.1},
-                                self.freegame_type: {20: 140, 50: 120, 100: 100, 250: 60},
+                                self.freegame_type: {20: 200, 50: 180, 100: 150, 250: 100},  # INCREASED for Super Wrath RTP
                             },
                             "force_wincap": False,
                             "force_freegame": True,

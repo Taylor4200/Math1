@@ -321,16 +321,8 @@ class GameStateOverride(GameExecutables):
     
     def should_tumble(self) -> bool:
         """
-        Override to control tumble frequency during simulations.
-        Allows more tumbles for better RTP and variety.
+        Tumbles MUST happen 100% of the time when there's a win.
+        We can only reduce tumbles through reel strip design (CSV files), not by blocking them.
         """
-        # Base game: Tumble 40% of the time when there's a win - MORE tumbles for variety
-        # Free game: Tumble 70% of the time - need lots of tumbles for bought bonuses to work
-        tumble_chance = 0.40 if self.gametype == self.config.basegame_type else 0.70
-        
-        # Check if there's actually a win
-        if self.win_data.get("totalWin", 0) <= 0:
-            return False
-        
-        # Random chance to allow tumble
-        return random.random() < tumble_chance
+        # Always tumble if there's a win - no exceptions
+        return self.win_data.get("totalWin", 0) > 0
