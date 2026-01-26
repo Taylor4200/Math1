@@ -39,6 +39,8 @@ class GameState(GameStateOverride):
         self.reset_fs_spin()
         # Reset cumulative multiplier at start of bonus
         self.cumulative_multiplier_sum = 0.0
+        # Initialize global multiplier for frontend (starts at 1x)
+        self.global_multiplier = 1
         
         while self.fs < self.tot_fs:
             self.update_freespin()

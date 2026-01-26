@@ -64,13 +64,16 @@ class GameExecutables(GameCalculations):
         """After all tumbling events have finished in bonus.
         If multiplier symbols landed: add to cumulative and multiply win by NEW cumulative total.
         If no multiplier symbols: just pay base win (no multiplier applied)."""
-        from src.events.events import set_win_event, set_total_event
+        from src.events.events import set_win_event, set_total_event, update_global_mult_event
         
         current_win = self.win_manager.spin_win
         
         if board_mult_sum > 0:
             # Multiplier symbols landed: add to cumulative and multiply win by NEW total
             new_cumulative = cumulative_multiplier_before + board_mult_sum
+            # Update global multiplier for frontend (cumulative total)
+            self.global_multiplier = int(new_cumulative)
+            update_global_mult_event(self)
             # Multiply win by the NEW cumulative total (includes the multipliers that just landed)
             self.win_manager.set_spin_win(current_win * new_cumulative)
             if self.win_manager.spin_win > 0:
@@ -80,6 +83,10 @@ class GameExecutables(GameCalculations):
         else:
             # No multiplier symbols: just pay base win (no multiplier applied)
             # Win stays as is (current_win) - no multiplication
+            # Still emit global multiplier event with current cumulative (in case frontend needs it)
+            self.global_multiplier = int(cumulative_multiplier_before)
+            if cumulative_multiplier_before > 0:
+                update_global_mult_event(self)
             if self.win_manager.spin_win > 0:
                 set_win_event(self)
             set_total_event(self)

@@ -65,8 +65,9 @@ def fix_reels_for_low_rtp():
     
     random.seed(42)
     
-    # Base game - INCREASED RTP: More symbols, more multipliers, more variety
+    # Base game - INCREASED RTP: More symbols, FEW multipliers, more variety
     # Higher paying symbols = rarer (inverse relationship)
+    # Multipliers should be VERY rare in base game (1 per ~20 spins)
     print("\nBase Game Reels:")
     base_gen = ReelGenerator(
         num_reels=6, num_rows=250,
@@ -82,7 +83,7 @@ def fix_reels_for_low_rtp():
             # Total low: 67% (~20.1 per board) - INCREASED for more wins
         },
         scatter_weight=0.015,  # More scatters for bonus variety
-        multiplier_weight=0.003,  # More multipliers (0.3% = ~4-5 per reel strip)
+        multiplier_weight=0.0016,  # MUCH RARER: ~0.4 multipliers per reel strip = ~1 per 20 spins
     )
     base_gen.generate_reel_file("reels/BR0.csv", reel_type="basegame")
     

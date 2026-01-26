@@ -1,5 +1,6 @@
 from game_executables import GameExecutables
 from src.calculations.statistics import get_random_outcome
+from src.events.events import json_ready_sym as base_json_ready_sym, EventConstants
 import random
 
 
@@ -61,8 +62,7 @@ class GameStateOverride(GameExecutables):
             # Hidden bonus no longer has instant wilds
             
             if emit_event:
-                from src.events.events import reveal_event
-                reveal_event(self)
+                self.reveal_event()
             
             # Emit sticky wilds update event for frontend (disabled for now)
             # self.emit_sticky_wilds_event()
@@ -162,8 +162,7 @@ class GameStateOverride(GameExecutables):
         if self.criteria == "0" and self.gametype == self.config.basegame_type:
             self._force_zero_win_board()
             if emit_event:
-                from src.events.events import reveal_event
-                reveal_event(self)
+                self.reveal_event()
             return
 
         # Guarantee the max-win outcome during the freegame portion of wincap simulations
@@ -175,9 +174,7 @@ class GameStateOverride(GameExecutables):
             self._force_wincap_board()
             self.force_wincap_pending = False
             if emit_event:
-                from src.events.events import reveal_event
-
-                reveal_event(self)
+                self.reveal_event()
             return
         
         # Check for multiplier feature mode - guarantee minimum multiplier symbol count
@@ -215,8 +212,7 @@ class GameStateOverride(GameExecutables):
         
         # No extra multiplier symbols - just guarantee the minimum (1)
         
-        from src.events.events import reveal_event
-        reveal_event(self)
+        self.reveal_event()
 
     def _force_zero_win_board(self) -> None:
         """Build a board that guarantees zero wins (no scatter pays, no multipliers, no tumbles)."""
@@ -308,6 +304,40 @@ class GameStateOverride(GameExecutables):
 
         self.get_special_symbols_on_board()
     
+    def reveal_event(self):
+        """Override reveal_event to include multiplier VALUES in board data."""
+        board_client = []
+        special_attributes = list(self.config.special_symbols.keys())
+        
+        for reel, _ in enumerate(self.board):
+            board_client.append([])
+            for row in range(len(self.board[reel])):
+                symbol = self.board[reel][row]
+                sym_data = self.json_ready_sym_with_multiplier(symbol, special_attributes)
+                board_client[reel].append(sym_data)
+        
+        if self.config.include_padding:
+            for reel, _ in enumerate(board_client):
+                top_sym = self.json_ready_sym_with_multiplier(self.top_symbols[reel], special_attributes)
+                bottom_sym = self.json_ready_sym_with_multiplier(self.bottom_symbols[reel], special_attributes)
+                board_client[reel] = [top_sym] + board_client[reel]
+                board_client[reel].append(bottom_sym)
+        
+        event = {
+            "index": len(self.book.events),
+            "type": EventConstants.REVEAL.value,
+            "board": board_client,
+            "paddingPositions": self.reel_positions,
+            "gameType": self.gametype,
+            "anticipation": self.anticipation,
+        }
+        self.book.add_event(event)
+    
+    def tumble_game_board(self):
+        """Override to use custom tumble_board_event with multiplier values."""
+        self.tumble_board()
+        self.tumble_board_event()  # Use our override instead of imported function
+    
     def find_new_wilds_on_board(self) -> list:
         """Find wilds that appeared on the board this spin (excluding existing sticky ones)."""
         new_wilds = []
@@ -318,6 +348,50 @@ class GameStateOverride(GameExecutables):
                     if not (reel_idx in self.sticky_wilds and row_idx in self.sticky_wilds[reel_idx]):
                         new_wilds.append({"reel": reel_idx, "row": row_idx})
         return new_wilds
+    
+    def json_ready_sym_with_multiplier(self, symbol, special_attributes):
+        """Helper: Include multiplier VALUE in symbol data, not just boolean."""
+        # Get base symbol data
+        sym_data = base_json_ready_sym(symbol, special_attributes)
+        
+        # If it's a multiplier symbol, include the actual multiplier value
+        if symbol.name == "M" and symbol.check_attribute("multiplier"):
+            multiplier_value = symbol.get_attribute("multiplier")
+            sym_data["multiplier"] = int(multiplier_value)  # Include the actual value
+        
+        return sym_data
+    
+    def tumble_board_event(self):
+        """Override tumble_board_event to include multiplier VALUES in new symbols."""
+        from src.events.event_constants import EventConstants
+        
+        special_attributes = list(self.config.special_symbols.keys())
+        
+        exploding = []
+        for win in self.win_data["wins"]:
+            for pos in win["positions"]:
+                if self.config.include_padding:
+                    exploding.append({"reel": pos["reel"], "row": pos["row"] + 1})
+                else:
+                    exploding.append({"reel": pos["reel"], "row": pos["row"]})
+        
+        exploding = sorted(exploding, key=lambda x: x["reel"])
+        
+        new_symbols = [[] for _ in range(self.config.num_reels)]
+        for r, _ in enumerate(self.new_symbols_from_tumble):
+            if len(self.new_symbols_from_tumble[r]) > 0:
+                new_symbols[r] = [
+                    self.json_ready_sym_with_multiplier(s, special_attributes) 
+                    for s in self.new_symbols_from_tumble[r]
+                ]
+        
+        event = {
+            "index": len(self.book.events),
+            "type": EventConstants.TUMBLE_BOARD.value,
+            "newSymbols": new_symbols,
+            "explodingSymbols": exploding,
+        }
+        self.book.add_event(event)
     
     def should_tumble(self) -> bool:
         """

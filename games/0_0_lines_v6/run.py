@@ -18,12 +18,13 @@ if __name__ == "__main__":
     profiling = False
 
     # Reduced simulation counts for MUCH faster runs
+    # Only regenerate base and bonus_booster (bonus modes already optimized)
     num_sim_args = {
-        "base": int(1e5),  # Reduced from 100k to 20k (5x faster)
-        "Wrath of Olympus": int(1e5),  # Reduced from 100k to 20k
-        "Super Wrath of Olympus": int(1e5),  # Reduced from 100k to 20k
-        "bonus_booster": int(1e5),  # Reduced from 100k to 20k
-        "Divine Strikes": int(1e5),  # Reduced from 100k to 20k
+        "base": int(1e5),  # Regenerate base with new multiplier frequency
+        "bonus_booster": int(1e5),  # Regenerate bonus_booster with new base reels
+        # "Wrath of Olympus": int(1e5),  # SKIP - already optimized
+        # "Super Wrath of Olympus": int(1e5),  # SKIP - already optimized
+        # "Divine Strikes": int(1e5),  # SKIP - already optimized
     }
 
     run_conditions = {
