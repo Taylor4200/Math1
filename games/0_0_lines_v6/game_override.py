@@ -321,13 +321,12 @@ class GameStateOverride(GameExecutables):
     
     def should_tumble(self) -> bool:
         """
-        Override to make tumbles rarer during simulations, but allow more in free games.
-        Only allows tumbles a percentage of the time even when there's a win.
-        This reduces excessive cascades without changing core game logic.
+        Override to control tumble frequency during simulations.
+        Allows more tumbles for better RTP and variety.
         """
-        # Base game: Only tumble 15% of the time when there's a win
-        # Free game: Tumble 30% of the time - need more tumbles for bought bonuses to work
-        tumble_chance = 0.15 if self.gametype == self.config.basegame_type else 0.30
+        # Base game: Tumble 40% of the time when there's a win - MORE tumbles for variety
+        # Free game: Tumble 70% of the time - need lots of tumbles for bought bonuses to work
+        tumble_chance = 0.40 if self.gametype == self.config.basegame_type else 0.70
         
         # Check if there's actually a win
         if self.win_data.get("totalWin", 0) <= 0:

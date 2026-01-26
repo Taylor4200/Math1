@@ -65,47 +65,46 @@ def fix_reels_for_low_rtp():
     
     random.seed(42)
     
-    # Base game - PROPER GAME DESIGN: 35% high symbols, 65% low symbols
+    # Base game - INCREASED RTP: More symbols, more multipliers, more variety
     # Higher paying symbols = rarer (inverse relationship)
     print("\nBase Game Reels:")
     base_gen = ReelGenerator(
         num_reels=6, num_rows=250,
         symbol_weights={
-            "H1": 0.09,  # Highest pay = rarest (~2.7 per board)
-            "H2": 0.12,  # Medium-high pay = medium rare (~3.6 per board)
-            "H3": 0.14,  # Lowest high pay = most common high (~4.2 per board)
-            # Total high: 35% (~10.5 per board)
-            "L1": 0.13,  # Highest low pay = rarest low (~3.9 per board)
-            "L2": 0.15,  # Medium-low pay (~4.5 per board)
-            "L3": 0.17,  # Medium pay (~5.1 per board)
-            "L4": 0.18,  # Lowest pay = most common low (~5.4 per board)
-            # Total low: 63% (~18.9 per board)
+            "H1": 0.10,  # Highest pay = rarest (~3 per board)
+            "H2": 0.13,  # Medium-high pay = medium rare (~3.9 per board)
+            "H3": 0.16,  # Lowest high pay = most common high (~4.8 per board)
+            # Total high: 39% (~11.7 per board) - INCREASED
+            "L1": 0.14,  # Highest low pay = rarest low (~4.2 per board)
+            "L2": 0.16,  # Medium-low pay (~4.8 per board)
+            "L3": 0.18,  # Medium pay (~5.4 per board)
+            "L4": 0.19,  # Lowest pay = most common (~5.7 per board)
+            # Total low: 67% (~20.1 per board) - INCREASED for more wins
         },
-        scatter_weight=0.008,  # Reduced scatters - fewer bonus triggers
-        multiplier_weight=0.001,  # Almost no multipliers
+        scatter_weight=0.015,  # More scatters for bonus variety
+        multiplier_weight=0.003,  # More multipliers (0.3% = ~4-5 per reel strip)
     )
     base_gen.generate_reel_file("reels/BR0.csv", reel_type="basegame")
     
-    # Free game - MORE multipliers and slightly more tumbles for bought bonuses
+    # Free game - INCREASED RTP: More symbols, more multipliers, more variety
     # Higher paying symbols = rarer (inverse relationship)
-    # More high symbols (40%) to reduce tumble frequency
-    # MORE multipliers for bought bonuses to work properly
+    # More high symbols for better payouts, more low symbols for more wins
     print("\nFree Game Reels:")
     free_gen = ReelGenerator(
         num_reels=6, num_rows=250,
         symbol_weights={
-            "H1": 0.11,  # Highest pay = rarest (~3.3 per board)
-            "H2": 0.13,  # Medium-high pay = medium rare (~3.9 per board)
-            "H3": 0.16,  # Lowest high pay = most common high (~4.8 per board)
-            # Total high: 40% (~12 per board) - MORE high symbols to reduce tumbles
-            "L1": 0.12,  # Highest low pay = rarest low (~3.6 per board)
-            "L2": 0.14,  # Medium-low pay (~4.2 per board)
-            "L3": 0.15,  # Medium pay (~4.5 per board)
-            "L4": 0.16,  # Lowest pay = most common low (~4.8 per board)
-            # Total low: 57% (~17.1 per board) - REDUCED to prevent cascades
+            "H1": 0.12,  # Highest pay = rarest (~3.6 per board)
+            "H2": 0.15,  # Medium-high pay = medium rare (~4.5 per board)
+            "H3": 0.18,  # Lowest high pay = most common high (~5.4 per board)
+            # Total high: 45% (~13.5 per board) - INCREASED for better payouts
+            "L1": 0.14,  # Highest low pay = rarest low (~4.2 per board)
+            "L2": 0.16,  # Medium-low pay (~4.8 per board)
+            "L3": 0.18,  # Medium pay (~5.4 per board)
+            "L4": 0.19,  # Lowest pay = most common low (~5.7 per board)
+            # Total low: 67% (~20.1 per board) - INCREASED for more wins
         },
-        scatter_weight=0.008,  # Reduced scatters - fewer bonus triggers
-        multiplier_weight=0.005,  # Increased multipliers (0.5% = ~7-8 per reel strip)
+        scatter_weight=0.015,  # More scatters for retrigger variety
+        multiplier_weight=0.012,  # More multipliers (1.2% = ~18 per reel strip) for bought bonuses
     )
     free_gen.generate_reel_file("reels/FR0.csv", reel_type="freegame")
     
